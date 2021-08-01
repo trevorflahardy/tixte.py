@@ -4,7 +4,8 @@ from typing import (
     ClassVar,
     Any,
     Optional,
-    Dict
+    Dict,
+    Union
 )
 
 from .errors import HTTPException
@@ -30,7 +31,7 @@ class Route:
     **parameters: Any
         Any params you want to add onto the url.
     """
-    __slots__ = ('BASE', 'method', 'path', 'url')
+    __slots__ = ('method', 'path', 'url')
     
     BASE: ClassVar[str] = 'https://api.tixte.com/v1'
     
@@ -90,3 +91,10 @@ class HTTP:
     def delete_file(self, upload_id: str) -> None:
         r = Route('DELETE', '/users/@me/uploads/{upload_id}', upload_id=upload_id)
         return self.request(r)
+
+    def fetch_client_user(self) -> Optional[Dict]:
+        r = Route('GET', '/users/@me')
+        return self.request(r)
+    
+    def fetch_user(self, user_id: str) -> Optional[Dict]:
+        raise NotImplementedError("This hasn't been implemented yet.")
