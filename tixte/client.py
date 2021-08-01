@@ -88,7 +88,7 @@ class Client:
         """
         return await self._http.delete_file(upload_id)
     
-    async def url_to_file(
+    async def file_from_url(
         self, 
         url: str, 
         filename: str = 'file.png'
