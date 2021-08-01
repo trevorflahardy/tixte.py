@@ -1,9 +1,10 @@
 import aiohttp
 import io
-from typing import Optional
+from typing import Optional, Union
 
 from .http import HTTP
 from .file import File, FileResponse
+from .user import ClientUser, User
 
 __all__ = (
     'Client',
@@ -35,9 +36,11 @@ class Client:
         Upload a file to Tixte.
     delete_file:
         Delete a file from Tixte.
+    fetch_user:
+        Fetch a user.
+    file_from_url:
+        Turn an image URL to a File object.
     """
-    __slots__ = ('session', 'domain', '_http',)
-    
     def __init__(
         self,
         upload_key: str,
@@ -87,6 +90,44 @@ class Client:
         None
         """
         return await self._http.delete_file(upload_id)
+    
+    async def fetch_user(
+        self, 
+        user_id: Optional[str] = None, 
+        *, 
+        set_attrs_to_client: bool = False
+    ) -> Union[ClientUser, User]:
+        """
+        Fetch a user and get some useful information back.
+        
+        ..note:
+            If no user_id is specified, a :class:`ClientUser` will be returned.
+            A ClientUser is yourself.
+            
+        Parameters
+        ----------
+        user_id: Optional[:class:`str`]
+            The user_id you want to fetch. If none is specified, a ClientUser will be returned.
+        set_attrs_to_client: Optional[:class:`bool`] = False
+            If you're fetching a ClientUser, you can choose to set all attrs from the ClientUser
+            onto the Client. This means you wouldn't have to do the fetch_user more then once for
+            client information.
+            
+            ```python
+            await client.fetch_user(set_attrs_to_client=True)
+            print(client.id)
+            print(client.email)
+            ```
+        """
+        if not user_id:
+            data = await self._http.fetch_client_user()
+            user = ClientUser(self._http, data)
+            if set_attrs_to_client:
+                user._dump_attrs_to_client(self)
+        else:
+            data = await self._http.fetch_user(user_id)
+            user = User(self._http, data)
+        return user
     
     async def file_from_url(
         self, 
