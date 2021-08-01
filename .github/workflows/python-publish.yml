@@ -8,8 +8,7 @@
 
 name: Upload Python Package
 
-on:
-    release
+on: push
 
 jobs:
   deploy:
