@@ -1,10 +1,33 @@
+"""
+The MIT License (MIT)
+Copyright (c) 2015-present Rapptz
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+"""
+
 import aiohttp
 import io
-from typing import Optional, Union
+from typing import Optional, List
 
 from .http import HTTP
 from .file import File, FileResponse
 from .user import ClientUser, User
+from .errors import UserNotFound
+from .domain import Domain
+from .config import Config
 
 __all__ = (
     'Client',
@@ -17,18 +40,23 @@ class Client:
     
     Parameters
     ----------
-    upload_key: :class:`str`
-        Your personal Tixte upload key. Can be found at `https://tixte.com/dashboard/configurations`
+    master_key: :class:`str`
+        Your Tixte master key. 
+        
+        How to obtain:
+            > Go to: https://tixte.com/dashboard/configurations
+            
+            > Go to the Console via pressing Ctrl + Shift + I 
+            
+            > Paste in `document.cookie.split("tixte_auth=")[1].split(";")[0]` at the bottom and press enter
+            
+            > Your key should be outputted.
+            
     domain: :class:`str`
         The domain you want to upload to. 
         If you haven't already, you need to create a domain at `https://tixte.com/dashboard/domains`
     session: Optional[:class:`aiohttp.ClientSession`]
         An optional session to pass into the client for requests.
-        
-    Attributes
-    ----------
-    domain:
-        The domain you set the client to use.
         
     Methods
     -------
@@ -43,14 +71,13 @@ class Client:
     """
     def __init__(
         self,
-        upload_key: str,
-        domain: str,
+        master_key: str,
         *,
+        domain: Optional[str] = None,
         session: Optional[aiohttp.ClientSession] = None,
     ) -> None:
-        self.domain = domain
-        self.session = session or aiohttp.ClientSession()
-        self._http = HTTP(upload_key, self.domain, session=self.session)
+        self._session = session or aiohttp.ClientSession()
+        self._http = HTTP(master_key, domain=domain, session=self._session)
         
     async def upload_file(self, file: File) -> FileResponse:
         """
@@ -91,23 +118,27 @@ class Client:
         """
         return await self._http.delete_file(upload_id)
     
-    async def fetch_user(
-        self, 
-        user_id: Optional[str] = None, 
+    async def fetch_config(self) -> Config:
+        """
+        Fetch your user config. This is mostly the configuration tab on Tixte.
+        
+        Returns
+        -------
+        :class:`Config`
+        """
+        data = await self._http.fetch_config()
+        return Config(self._http, data)
+    
+    async def fetch_client_user(
+        self,
         *, 
         set_attrs_to_client: bool = False
-    ) -> Union[ClientUser, User]:
+    ) -> ClientUser:
         """
-        Fetch a user and get some useful information back.
+        Fetch your user. and get some useful information back.
         
-        ..note:
-            If no user_id is specified, a :class:`ClientUser` will be returned.
-            A ClientUser is yourself.
-            
         Parameters
         ----------
-        user_id: Optional[:class:`str`]
-            The user_id you want to fetch. If none is specified, a ClientUser will be returned.
         set_attrs_to_client: Optional[:class:`bool`] = False
             If you're fetching a ClientUser, you can choose to set all attrs from the ClientUser
             onto the Client. This means you wouldn't have to do the fetch_user more then once for
@@ -118,17 +149,68 @@ class Client:
             print(client.id)
             print(client.email)
             ```
+        
+        Returns
+        -------
+        :class:`ClientUser`
         """
-        if not user_id:
-            data = await self._http.fetch_client_user()
-            user = ClientUser(self._http, data)
-            if set_attrs_to_client:
-                user._dump_attrs_to_client(self)
-        else:
-            data = await self._http.fetch_user(user_id)
-            user = User(self._http, data)
+        data = await self._http.fetch_client_user()
+        user = ClientUser(self._http, data)
+        if set_attrs_to_client:
+            user._dump_attrs_to_client(self)
         return user
+                
     
+    async def fetch_user(
+        self, 
+        user_id: str
+    ) -> Optional[User]:
+        """
+        Fetch a user and get some useful information back.
+        
+        ..note:
+            If no user_id is specified, a :class:`ClientUser` will be returned.
+            A ClientUser is yourself.
+            
+        Parameters
+        ----------
+        user_id: str
+            The user_id you want to fetch. This can also work with user name.
+            
+        Returns
+        -------
+        User if found.
+        """
+        data = await self._http.fetch_user(user_id)
+        return User(self._http, data)
+    
+    async def fetch_domains(self) -> Optional[List[Domain]]:
+        """
+        Get all your domain data.
+        
+        Returns
+        -------
+        :class:`Domain`
+        """
+        data = await self._http.fetch_domains()
+        domains = []
+        for entry in data['domains']:
+            local_domain = Domain(entry)
+            if hasattr(self, '_raw_user'):
+                if self.id == entry['owner']:  # We own this
+                    user = User(self._http, self._raw_user)
+                    local_domain.owner = user
+                    domains.append(local_domain)
+                    continue
+            try:
+                user = await self.fetch_user(entry['owner'])
+                local_domain.owner = user
+            except UserNotFound:
+                continue
+            domains.append(local_domain)
+            
+        return domains
+
     async def file_from_url(
         self, 
         url: str, 
@@ -148,7 +230,7 @@ class Client:
         -------
         :class:`File`
         """
-        async with self.session.get(url) as resp:
+        async with self._session.get(url) as resp:
             if resp.status != 200:
                 return None
             bytes = io.BytesIO(await resp.read())
