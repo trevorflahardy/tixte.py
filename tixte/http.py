@@ -1,14 +1,38 @@
+"""
+The MIT License (MIT)
+Copyright (c) 2015-present Rapptz
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+"""
+
 import aiohttp
+import logging
 
 from typing import (
     ClassVar,
     Any,
     Optional,
     Dict,
-    Union
 )
 
-from .errors import HTTPException
+from .errors import (
+    HTTPException, 
+    NoDomain,
+    UserNotFound
+)
 from .file import File
 
 
@@ -53,40 +77,60 @@ class Route:
         
         
 class HTTP:
-    __slots__ = ('session', 'upload_key', 'domain')
+    __slots__ = ('session', 'master_key', 'domain')
     
     def __init__(
         self, 
-        upload_key: str,
-        domain: str,
+        master_key: str,
         *,
+        domain: Optional[str] = None,
         session: aiohttp.ClientSession
     ) -> None:
-        self.session = session
-        self.upload_key = upload_key
+        self.master_key = master_key
         self.domain = domain
+        self.session = session
     
     async def request(self, route: Route, **kwargs: Any) -> Dict:
         method = route.method
         url = route.url
 
         kwargs['headers'] = {
-            'Authorization': self.upload_key
+            'Authorization': self.master_key
         }
         
         async with self.session.request(method, url, **kwargs) as resp:
             data = await resp.json()
-            data = data['data']
+            return_data = data.get('data')
+            
+            if not return_data:
+                message = data['error']['message']
+                if data['error']['code'] == 'not_found':
+                    raise UserNotFound(message)
+                
+                raise HTTPException(data['error']['message'])
+            
             if resp.status != 200:
-                raise HTTPException(data['message'])
-            return data
+                raise HTTPException(data['data']['message'])
+            
+            return return_data
     
-    def upload_file(self, file: File) -> Optional[Dict]:
+    async def _get_domain_if_none(self):
+        data = await self.fetch_domains()
+        if data['total'] < 1:
+            raise NoDomain("You have not made any domains yet. This process was cancelled.")
+        
+        return data['domains'][0]['name']
+    
+    async def upload_file(self, file: File) -> Optional[Dict]:
         data = aiohttp.FormData()
         data.add_field('file', file.fp, filename=file.filename, content_type='application/octet-stream')
         
+        if not self.domain:
+            self.domain = await self._get_domain_if_none()
+            logging.info(f"New domain used because none specified: {self.domain}")
+    
         r = Route('POST', '/upload?domain={domain}', domain=self.domain)
-        return self.request(r, data=data)
+        return await self.request(r, data=data)
     
     def delete_file(self, upload_id: str) -> None:
         r = Route('DELETE', '/users/@me/uploads/{upload_id}', upload_id=upload_id)
@@ -97,4 +141,13 @@ class HTTP:
         return self.request(r)
     
     def fetch_user(self, user_id: str) -> Optional[Dict]:
-        raise NotImplementedError("This hasn't been implemented yet.")
+        r = Route('GET', '/users/{user_id}', user_id=user_id)
+        return self.request(r)
+    
+    def fetch_domains(self) -> Optional[Dict]:
+        r = Route('GET', '/users/@me/domains')
+        return self.request(r)
+    
+    def fetch_config(self) -> Optional[Dict]:
+        r = Route('GET', '/users/@me/config')
+        return self.request(r)
