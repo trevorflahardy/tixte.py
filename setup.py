@@ -5,7 +5,7 @@ HERE = pathlib.Path(__file__).parent
 
 README = (HERE / "README.md").read_text()
 
-VERSION = "0.0.4"
+VERSION = "0.0.5"
 
 requirements = ['aiohttp>=3.6.0,<3.8.0']
 
