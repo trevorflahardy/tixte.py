@@ -164,7 +164,7 @@ class Client:
     async def fetch_user(
         self, 
         user_id: str
-    ) -> Optional[User]:
+    ) -> User:
         """
         Fetch a user and get some useful information back.
         
@@ -179,7 +179,7 @@ class Client:
             
         Returns
         -------
-        User if found.
+        :class:`User`
         """
         data = await self._http.fetch_user(user_id)
         return User(self._http, data)
