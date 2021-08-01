@@ -13,6 +13,19 @@ python -m pip install tixte
 py -m pip install tixte
 ```
 
+# How to get your master key
+Getting the master key isn't that hard
+
+- Go to [the Tixte Dashboard](https://tixte.com/dashboard/configurations)
+
+- Go to the Console via pressing `Ctrl + Shift + I`
+            
+- Paste in `document.cookie.split("tixte_auth=")[1].split(";")[0]` at the bottom and press enter
+
+- Your key should be outputted.
+
+Note: **Do not share this mater key with anyone.**
+
 # Examples
 See all examples in the examples folder
 
@@ -23,7 +36,7 @@ import asyncio
 
 
 async def main():
-    client = tixte.Client('your-upload-key', domain='your-domain.com')
+    client = tixte.Client('your-mater-key',)
     file = tixte.File('this_image.png')
     
     uploaded_file = await client.upload_file(file=file)  # Upload file
@@ -44,7 +57,11 @@ import tixte
 import asyncio
 
 async def main():
-    client = tixte.Client('your-upload-key', domain='your-domain.com')
+    # The domain in Client is optional, the first domain
+    # from the fetch_domains() func will be used unless
+    # specified.
+
+    client = tixte.Client('your-master-key', domain='your-domain.com')  
 
     url = 'https://nerdist.com/wp-content/uploads/2020/07/maxresdefault.jpg'
     file = await client.file_from_url(url=url, filename='notrickroll.png')
