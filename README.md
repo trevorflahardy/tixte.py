@@ -36,7 +36,7 @@ import asyncio
 
 
 async def main():
-    client = tixte.Client('your-mater-key',)
+    client = tixte.Client('your-mater-key')
     file = tixte.File('this_image.png')
     
     uploaded_file = await client.upload_file(file=file)  # Upload file
