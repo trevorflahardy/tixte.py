@@ -98,7 +98,6 @@ class File:
         if self._owner:
             self._closer()
             
-            
 class FileResponse:
     """
     The base FileResponse obj you get back when uploading an image.
@@ -144,7 +143,6 @@ class FileResponse:
     
     def __str__(self) -> str:
         return self.direct_url
-        
+
     async def delete(self) -> None:
-        print(self.deletion_url)
         return await self._status.delete_file(self.id)
