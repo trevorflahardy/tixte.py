@@ -22,6 +22,20 @@ from typing import Dict, Any
 
 
 class Config:
+    """
+    The base Config class you gget when using fetch_config.
+    
+    Attributes
+    ----------
+    custom_css: :class:`str`
+        The custom CSS of your config
+    hide_branding: :class:`bool`
+        Whether or not you hide branding.
+    base_redirect: :class:`bool`
+        Whether or not you base redirect
+    embed: :class:`dict`
+        Your custom embed information.
+    """
     def __init__(
         self, 
         status: Any,
