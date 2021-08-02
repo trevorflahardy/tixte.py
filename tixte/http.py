@@ -126,10 +126,6 @@ class HTTP:
             async with self.session.request(method, url, **kwargs) as response:
                 data = await self._json_or_text(response)
                 
-                logging.debug(f'Recieved HTTP Status of {response.status}')
-                logging.debug(f'Time (in seconds) before rate limit gets reset: {response.headers.get("x-ratelimit-reset")}')
-                logging.debug(f'Amount of reqs left before hitting the limit: {response.headers.get("x-ratelimit-remaining")}')
-                
                 if 300 > response.status >= 200:  # Everything is ok
                     logging.debug(self.REQUEST_LOG.format(method=method, url=url, json=data, status=response.status))
                     
