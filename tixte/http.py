@@ -166,11 +166,11 @@ class HTTP:
                     
     async def _get_domain_if_none(self):
         data = await self.fetch_domains()
-        print(data)
         if data['total'] < 1:
             raise NoDomain("You have not made any domains yet. This process was cancelled.")
         
-        return data['domains'][0]['name']
+        top_domains = sorted(data['domains'], key=lambda x: x['uploads'], reverse=True)
+        return top_domains[0]['name']
     
     async def upload_file(self, file: File) -> Optional[Dict]:
         data = aiohttp.FormData()
