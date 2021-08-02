@@ -6,7 +6,7 @@ __version__ = "0.0.5"
 
 from .client import *
 from .config import *
-from .domain import Domain
+from .domain import *
 from .errors import *
 from .file import *
 from .http import *

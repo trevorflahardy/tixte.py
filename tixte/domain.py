@@ -22,7 +22,7 @@ from typing import Union, Dict
 from .user import User
 
 __all__ = (
-    'Domain'
+    'Domain',
 )
 
 class Domain:
