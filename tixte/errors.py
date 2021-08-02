@@ -23,7 +23,9 @@ __all__ = (
     'NotImplementedError',
     'HTTPException',
     'NoDomain',
-    'UserNotFound'
+    'NotFound',
+    'Forbidden',
+    'TixteServerError'
 )
 
 
@@ -45,6 +47,12 @@ class NoDomain(BaseException):
     pass
 
 
-class UserNotFound(BaseException):
+class NotFound(BaseException):
     pass
 
+
+class Forbidden(BaseException):
+    pass
+
+class TixteServerError(BaseException):
+    pass
