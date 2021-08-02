@@ -160,7 +160,6 @@ class Client:
             user._dump_attrs_to_client(self)
         return user
                 
-    
     async def fetch_user(
         self, 
         user_id: str
@@ -211,10 +210,11 @@ class Client:
             
         return domains
 
-    async def file_from_url(
+    async def url_to_file(
         self, 
+        *,
         url: str, 
-        filename: str = 'file.png'
+        filename: str
     ) -> Optional[File]:
         """
         Use a file URL and turn it into a File obj.
@@ -223,18 +223,12 @@ class Client:
         ----------
         url: :class:`str`
             The url to turn into a file obj.
-        filename: Optional[:class:`str`]
+        filename: :class:`str`
             The filename you want the File obj to be.
             
         Returns
         -------
         :class:`File`
         """
-        async with self._session.get(url) as resp:
-            if resp.status != 200:
-                return None
-            bytes = io.BytesIO(await resp.read())
-            bytes.seek(0)
-        
-        return File(bytes, filename=filename)
+        return await self._http.url_to_file(url=url, filename=filename)
     
