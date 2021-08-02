@@ -27,6 +27,8 @@ from typing import (
     ClassVar
 )
 
+from .file import File
+
 __all__ = (
     'User',
     'ClientUser',
@@ -74,6 +76,22 @@ class User:
         
     def __str__(self) -> str:
         return self.username
+    
+    def __eq__(self, o: object) -> bool:
+        return self.id == o.id
+    
+    def __repr__(self) -> str:
+        return f'<User {self.id} {self.username}>'
+    
+    async def save_avatar(
+        self, 
+    ) -> Optional[File]:
+        if not self.avatar:
+            return None
+        return self._status.url_to_file(self.avatar)
+        
+        
+        
 
 class ClientUser(User):
     """
