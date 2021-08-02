@@ -52,9 +52,13 @@ class Client:
             
             > Your key should be outputted.
             
-    domain: :class:`str`
+    domain: Optional[:class:`str`]
         The domain you want to upload to. 
         If you haven't already, you need to create a domain at `https://tixte.com/dashboard/domains`
+        
+        ..note:
+            If no domain is specified, the domain with the most amount of uploads will be defaulted.
+        
     session: Optional[:class:`aiohttp.ClientSession`]
         An optional session to pass into the client for requests.
         
