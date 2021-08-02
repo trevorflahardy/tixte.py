@@ -86,6 +86,14 @@ class User:
     async def save_avatar(
         self, 
     ) -> Optional[File]:
+        """
+        Save the user's avatar to a :class:`File` obj.
+        Could return None if the user has not set an avatar.
+        
+        Returns
+        -------
+        Optional[:class:`File`]
+        """
         if not self.avatar:
             return None
         return self._status.url_to_file(self.avatar)
