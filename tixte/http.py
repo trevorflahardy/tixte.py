@@ -18,7 +18,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import re
+import io
+import sys
 import aiohttp
 import asyncio
 import logging
@@ -30,6 +31,7 @@ from typing import (
     Dict,
     Union,
     Dict,
+    Final
 )
 
 from .errors import (
@@ -40,7 +42,7 @@ from .errors import (
     HTTPException
 )
 from .file import File
-from . import utils
+from . import utils, __version__
 
 
 __all__ = (
@@ -84,7 +86,11 @@ class Route:
         
         
 class HTTP:
-    __slots__ = ('session', 'master_key', 'domain')
+    __slots__ = ('session', 'master_key', 'domain', 'user_agent')
+    
+    # Dis var taken from d.py :blobsweats:
+    # https://github.com/Rapptz/discord.py/blob/master/discord/http.py#L163
+    REQUEST_LOG: ClassVar[str] = '{method} {url} with {json} has returned {status}'  
     
     def __init__(
         self, 
@@ -97,14 +103,13 @@ class HTTP:
         self.domain = domain
         self.session = session
         
-    async def _json_or_text(response: aiohttp.ClientResponse) -> Union[Dict[str, Any], str]:
+        user_agent = 'TixteClient (https://github.com/NextChai/Tixte {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
+        self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
+        
+    async def _json_or_text(self, response: aiohttp.ClientResponse) -> Union[Dict[str, Any], str]:
         text = await response.text(encoding='utf-8')
-        try:
-            if response.headers.get('content-type' )== 'application/json':
-                return utils.to_json(text)
-        except KeyError:
-            pass
-
+        if response.headers.get('Content-Type') == 'application/json; charset=utf-8':
+            return utils.to_json(text)
         return text
 
     async def request(self, route: Route, **kwargs: Any) -> Dict:
@@ -112,7 +117,8 @@ class HTTP:
         url = route.url
 
         kwargs['headers'] = {
-            'Authorization': self.master_key
+            'Authorization': self.master_key,
+            'User-Agent': self.user_agent
         }
         
         response: Union[aiohttp.ClientResponse, None] = None
@@ -120,11 +126,26 @@ class HTTP:
             async with self.session.request(method, url, **kwargs) as response:
                 data = await self._json_or_text(response)
                 
+                logging.debug(f'Recieved HTTP Status of {response.status}')
+                logging.debug(f'Time (in seconds) before rate limit gets reset: {response.headers.get("x-ratelimit-reset")}')
+                logging.debug(f'Amount of reqs left before hitting the limit: {response.headers.get("x-ratelimit-remaining")}')
+                
                 if 300 > response.status >= 200:  # Everything is ok
+                    logging.debug(self.REQUEST_LOG.format(method=method, url=url, json=data, status=response.status))
+                    
+                    if data.get('data'):
+                        return data['data']
                     return data
                 
                 if response.status == 429:   # We're rate limited
-                    retry_after: float = response.headers.get('x-ratelimit-reset')  # time (in seconds) before rate limit gets reset
+                    headers = response.headers
+                    retry_after: float = float(headers.get('x-ratelimit-reset'))  # Retry the status after this amount of time
+                    if retry_after == 0 and not headers.get('x-ratelimit-remaining'):
+                        retry_after: float = float(headers.get('Retry-After'))
+                    
+                    fmt = f'We are being rate limited! Trying again in {retry_after} seconds.'
+                    logging.warning(fmt)
+                    
                     await asyncio.sleep(retry_after)  # Sleep until no ratelimit :ok_hand:
                     continue
                 
@@ -149,6 +170,7 @@ class HTTP:
                     
     async def _get_domain_if_none(self):
         data = await self.fetch_domains()
+        print(data)
         if data['total'] < 1:
             raise NoDomain("You have not made any domains yet. This process was cancelled.")
         
@@ -184,3 +206,17 @@ class HTTP:
     def fetch_config(self) -> Optional[Dict]:
         r = Route('GET', '/users/@me/config')
         return self.request(r)
+    
+    async def url_to_file(
+        self, 
+        *,
+        url: str, 
+        filename: str
+    ) -> File:
+        async with self.session.get(url) as resp:
+            if resp.status != 200:
+                return None
+            bytes = io.BytesIO(await resp.read())
+            bytes.seek(0)
+        
+        return File(bytes, filename=filename)
