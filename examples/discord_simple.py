@@ -2,7 +2,7 @@ import tixte
 import discord
 
 client = discord.Client(intents=discord.Intents.all(), command_prefix='!')
-client.tixte = tixte.Client('your-upload-key', domain='your-domain.com')
+client.tixte = tixte.Client('your-master-token')
 
 @client.event
 async def on_member_join(member):

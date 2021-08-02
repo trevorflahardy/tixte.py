@@ -15,8 +15,7 @@ class DiscordBot(commands.Bot):
         
         self.session = aiohttp.ClientSession()
         self.tixte = tixte.Client(
-            'your-upload-key', 
-            domain='your-domain.com'
+            'your-master-token', 
         )
         
     async def upload_file(self, file: Union[tixte.File, discord.File]) -> tixte.FileResponse:
