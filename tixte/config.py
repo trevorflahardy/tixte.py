@@ -20,6 +20,9 @@ DEALINGS IN THE SOFTWARE.
 
 from typing import Dict, Any
 
+__all__ = (
+    'Config',
+)
 
 class Config:
     """
