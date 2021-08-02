@@ -18,7 +18,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import re
 import aiohttp
+import asyncio
 import logging
 
 from typing import (
@@ -26,14 +28,19 @@ from typing import (
     Any,
     Optional,
     Dict,
+    Union,
+    Dict,
 )
 
 from .errors import (
-    HTTPException, 
     NoDomain,
-    UserNotFound
+    Forbidden,
+    NotFound,
+    TixteServerError,
+    HTTPException
 )
 from .file import File
+from . import utils
 
 
 __all__ = (
@@ -89,7 +96,17 @@ class HTTP:
         self.master_key = master_key
         self.domain = domain
         self.session = session
-    
+        
+    async def _json_or_text(response: aiohttp.ClientResponse) -> Union[Dict[str, Any], str]:
+        text = await response.text(encoding='utf-8')
+        try:
+            if response.headers.get('content-type' )== 'application/json':
+                return utils.to_json(text)
+        except KeyError:
+            pass
+
+        return text
+
     async def request(self, route: Route, **kwargs: Any) -> Dict:
         method = route.method
         url = route.url
@@ -98,22 +115,38 @@ class HTTP:
             'Authorization': self.master_key
         }
         
-        async with self.session.request(method, url, **kwargs) as resp:
-            data = await resp.json()
-            return_data = data.get('data')
-            
-            if not return_data:
-                message = data['error']['message']
-                if data['error']['code'] == 'not_found':
-                    raise UserNotFound(message)
+        response: Union[aiohttp.ClientResponse, None] = None
+        for tries in range(5):
+            async with self.session.request(method, url, **kwargs) as response:
+                data = await self._json_or_text(response)
                 
-                raise HTTPException(data['error']['message'])
-            
-            if resp.status != 200:
-                raise HTTPException(data['data']['message'])
-            
-            return return_data
-    
+                if 300 > response.status >= 200:  # Everything is ok
+                    return data
+                
+                if response.status == 429:   # We're rate limited
+                    retry_after: float = response.headers.get('x-ratelimit-reset')  # time (in seconds) before rate limit gets reset
+                    await asyncio.sleep(retry_after)  # Sleep until no ratelimit :ok_hand:
+                    continue
+                
+                if response.status in {500, 502, 504}:  # Taken from d.py yayy
+                    await asyncio.sleep(1 + tries * 2)
+                    continue
+                
+                if response.status == 403:
+                    raise Forbidden(response, data)
+                elif response.status == 404:
+                    raise NotFound(response, data)
+                elif response.status >= 500:
+                    raise TixteServerError(response, data)
+                else:
+                    raise HTTPException(response, data)
+                
+        if response is not None:
+            if response.status >= 500:
+                raise TixteServerError(response, data)
+            raise HTTPException(response, data)
+        raise RuntimeError('Unreachable code in HTTP handling')
+                    
     async def _get_domain_if_none(self):
         data = await self.fetch_domains()
         if data['total'] < 1:
