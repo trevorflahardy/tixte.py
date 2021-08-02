@@ -25,7 +25,7 @@ from typing import Optional, List
 from .http import HTTP
 from .file import File, FileResponse
 from .user import ClientUser, User
-from .errors import UserNotFound
+from .errors import NotFound
 from .domain import Domain
 from .config import Config
 
@@ -205,7 +205,7 @@ class Client:
             try:
                 user = await self.fetch_user(entry['owner'])
                 local_domain.owner = user
-            except UserNotFound:
+            except NotFound:
                 continue
             domains.append(local_domain)
             
