@@ -36,6 +36,9 @@ class Config:
     embed: :class:`dict`
         Your custom embed information.
     """
+    
+    __slots__ = ('_status', '_data', 'custom_css', 'hide_branding', 'base_redirect', 'embed')
+    
     def __init__(
         self, 
         status: Any,
