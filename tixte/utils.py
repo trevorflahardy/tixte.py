@@ -23,8 +23,8 @@ SOFTWARE.
 """
 
 import json
-from typing import Any
+from typing import Any, Dict
 
 
-def to_json(string: str) -> dict[Any, Any]:
+def to_json(string: str) -> Dict[Any, Any]:
     return json.loads(string)
