@@ -24,7 +24,7 @@ Getting the master key isn't that hard
 
 - Your key should be outputted.
 
-Note: **Do not share this mater key with anyone.**
+Note: **Do not share this master key with anyone.**
 
 # Examples
 See all examples in the examples folder
