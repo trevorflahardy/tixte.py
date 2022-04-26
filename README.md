@@ -24,7 +24,7 @@ Getting the master key isn't that hard
 
 - Your key should be outputted.
 
-Note: **Do not share this mater key with anyone.**
+Note: **Do not share this master key with anyone.**
 
 # Examples
 See all examples in the examples folder
@@ -36,7 +36,7 @@ import asyncio
 
 
 async def main():
-    client = tixte.Client('your-mater-key')
+    client = tixte.Client('your-master-key')
     file = tixte.File('this_image.png')
     
     uploaded_file = await client.upload_file(file=file)  # Upload file
