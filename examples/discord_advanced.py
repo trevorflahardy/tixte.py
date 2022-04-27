@@ -12,12 +12,12 @@ class DiscordBot(commands.Bot):
             command_prefix='!',
             intents=discord.Intents.all(),
         )
-        
+
         self.session = aiohttp.ClientSession()
         self.tixte = tixte.Client(
-            'your-master-token', 
+            'your-master-token',
         )
-        
+
     async def upload_file(self, file: Union[tixte.File, discord.File]) -> tixte.FileResponse:
         return await self.tixte.upload_file(file=file)
 
@@ -25,6 +25,7 @@ class DiscordBot(commands.Bot):
         if isinstance(upload_id, tixte.FileResponse):
             upload_id = upload_id.id
         return await self.tixte.delete_file(upload_id=upload_id)
-    
+
+
 bot = DiscordBot()
 bot.run('token', reconnect=True)

@@ -16,9 +16,9 @@ setup(
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://github.com/NextChai/Tixte",
-    project_urls = {
+    project_urls={
         'Report a Bug': 'https://github.com/NextChai/Tixte/issues',
-        "Contribute": 'https://github.com/NextChai/Tixte/pulls'
+        "Contribute": 'https://github.com/NextChai/Tixte/pulls',
     },
     version=VERSION,
     license="MIT",
@@ -37,4 +37,4 @@ setup(
             "square=square.__main__:main",
         ]
     },
-)   
+)

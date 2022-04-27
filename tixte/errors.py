@@ -1,6 +1,8 @@
 """
 The MIT License (MIT)
-Copyright (c) 2015-present Rapptz
+
+Copyright (c) 2021-present NextChai
+
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
 to deal in the Software without restriction, including without limitation
@@ -17,42 +19,68 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+from __future__ import annotations
 
-__all__ = (
-    'BaseException',
-    'NotImplementedError',
+from typing import TYPE_CHECKING, Any, Tuple
+
+from .abc import Object
+
+if TYPE_CHECKING:
+    from aiohttp import ClientResponse
+
+__all__: Tuple[str, ...] = (
+    'TixteException',
     'HTTPException',
-    'NoDomain',
     'NotFound',
     'Forbidden',
-    'TixteServerError'
+    'TixteServerError',
 )
 
 
-class BaseException(Exception):
-    pass
-        
+class TixteException(Exception, Object):
+    """The base Tixte Exception. All Tixte Exceptions inherit from this."""
 
-class NotImplementedError(BaseException):
-    def __init__(self, message: str, *args: object) -> None:
-        self.message = message
-        self.args = args
-
-        
-class HTTPException(BaseException):
     pass
 
 
-class NoDomain(BaseException):
+class HTTPException(TixteException):
+    """An exception raised when an HTTP Exception occurs from the API.
+
+    Attributes
+    ----------
+    response: :class:`aiohttp.ClientResponse`
+        The response from the API.
+    data: :class:`Any`
+        The data returned from the API.
+    """
+
+    def __init__(self, response: ClientResponse, data: Any, *args: Any, **kwargs: Any) -> None:
+        self.response: ClientResponse = response
+        self.data: Any = data
+        super().__init__(*args, **kwargs)
+
+
+class NotFound(HTTPException):
+    """An exception raised when an object is not Found.
+
+    This inherits from :class:`HTTPException`."""
+
     pass
 
 
-class NotFound(BaseException):
+class Forbidden(HTTPException):
+    """An exception raised when the user does not have permission
+    to perform an action.
+
+    This inherits from :class:`HTTPException`."""
+
     pass
 
 
-class Forbidden(BaseException):
-    pass
+class TixteServerError(HTTPException):
+    """An exception raised when an internal Tixte server error
+    occurs from the API.
 
-class TixteServerError(BaseException):
+    This inherits from :class:`HTTPException`."""
+
     pass

@@ -4,6 +4,7 @@ import discord
 client = discord.Client(intents=discord.Intents.all(), command_prefix='!')
 client.tixte = tixte.Client('your-master-token')
 
+
 @client.event
 async def on_member_join(member):
     if member.id == 146348630926819328:  # Specific user

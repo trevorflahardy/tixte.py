@@ -58,7 +58,7 @@ import asyncio
 
 async def main():
     # The domain in Client is optional, the first domain
-    # from the fetch_domains() func will be used unless
+    # from the get_domains() func will be used unless
     # specified.
 
     client = tixte.Client('your-master-key', domain='your-domain.com')  
