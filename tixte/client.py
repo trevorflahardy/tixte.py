@@ -290,12 +290,12 @@ class Client(Object):
 
     def get_partial_upload(self, id: str, /) -> PartialUpload:
         """A method used to get a partial upload from its ID.
-        
+
         Parameters
         ----------
         id: :class:`str`
             The ID of the partial upload to get.
-            
+
         Returns
         -------
         :class:`PartialUpload`

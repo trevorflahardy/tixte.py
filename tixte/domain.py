@@ -45,7 +45,7 @@ class Domain(Object):
         The id of the owner of the domain.
     """
 
-    __slots__: Tuple[str, ...] = ('url', 'uploads')
+    __slots__: Tuple[str, ...] = ('url', 'uploads', '_state', 'owner_id')
 
     def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
         self._state: State = state

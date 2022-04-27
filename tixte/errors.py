@@ -21,7 +21,7 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Tuple
+from typing import TYPE_CHECKING, Any, Optional, Tuple
 
 from .abc import Object
 
@@ -40,8 +40,8 @@ __all__: Tuple[str, ...] = (
 class TixteException(Exception, Object):
     """The base Tixte Exception. All Tixte Exceptions inherit from this."""
 
-    pass
-
+    __slots__: Tuple[str, ...] = ()
+    
 
 class HTTPException(TixteException):
     """An exception raised when an HTTP Exception occurs from the API.
@@ -53,11 +53,25 @@ class HTTPException(TixteException):
     data: :class:`Any`
         The data returned from the API.
     """
+    
+    __slots__: Tuple[str, ...] = ('response', 'data',)
 
     def __init__(self, response: ClientResponse, data: Any, *args: Any, **kwargs: Any) -> None:
         self.response: ClientResponse = response
         self.data: Any = data
-        super().__init__(*args, **kwargs)
+        
+        self.message: Optional[str]
+        self.code: Optional[str]
+        
+        if isinstance(data, dict):
+            self.message = data.get('error', {}).get('message') # type: ignore
+            self.code = data.get('error', {}).get('code') # type: ignore
+        else:
+            self.message = None
+            self.code = None
+        
+        message_fmt = f'{self.code or "No code."}: {self.message or "No message"}.'
+        super().__init__(message_fmt, *args, **kwargs)
 
 
 class NotFound(HTTPException):
@@ -65,7 +79,7 @@ class NotFound(HTTPException):
 
     This inherits from :class:`HTTPException`."""
 
-    pass
+    __slots__: Tuple[str, ...] = ()
 
 
 class Forbidden(HTTPException):
@@ -74,7 +88,7 @@ class Forbidden(HTTPException):
 
     This inherits from :class:`HTTPException`."""
 
-    pass
+    __slots__: Tuple[str, ...] = ()
 
 
 class TixteServerError(HTTPException):
@@ -83,4 +97,4 @@ class TixteServerError(HTTPException):
 
     This inherits from :class:`HTTPException`."""
 
-    pass
+    __slots__: Tuple[str, ...] = ()

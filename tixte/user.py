@@ -128,6 +128,15 @@ class ClientUser(User):
         The user's upload region.
     """
 
+    __slots__: Tuple[str, ...] = (
+        'mfa_enabled',
+        'email',
+        'email_verified',
+        'phone',
+        'upload_region',
+        '_last_login',
+    )
+
     def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
         super().__init__(state=state, data=data)
 

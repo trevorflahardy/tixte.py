@@ -30,7 +30,7 @@ class Object(object):
     """The base object for all objects
     within the Tixte system. Every class inherits from this.
     """
-    
+
     __slots__: Tuple[str, ...] = ()
 
     def __repr__(self) -> str:

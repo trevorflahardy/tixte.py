@@ -57,7 +57,7 @@ class Config(Object):
         'custom_css',
         'hide_branding',
         'base_redirect',
-        'raw_embed',
+        '_embed',
     )
 
     def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:

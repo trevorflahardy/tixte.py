@@ -37,6 +37,9 @@ __all__: Tuple[str, ...] = ('State',)
 
 
 class State(Object):
+    
+    __slots__: Tuple[str, ...] = ('dispatch', 'http', 'users', 'client_user', 'domains', '_get_client')
+    
     if TYPE_CHECKING:
         _get_client: Callable[..., Client]
 
@@ -48,7 +51,6 @@ class State(Object):
     ) -> None:
         self.dispatch: Callable[..., List[Task[Any]]] = dispatch
         self.http: HTTP = http
-        self._maxsize: int = kwargs.get('maxsize', 1000)
 
         self._reload()
 
