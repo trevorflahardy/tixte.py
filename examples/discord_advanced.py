@@ -1,6 +1,7 @@
+from typing import Union
+
 import tixte
 import aiohttp
-from typing import Union
 
 import discord
 from discord.ext import commands
@@ -14,18 +15,14 @@ class DiscordBot(commands.Bot):
         )
 
         self.session = aiohttp.ClientSession()
-        self.tixte = tixte.Client(
-            'your-master-token',
-        )
+        self.tixte = tixte.Client('your-master-token', 'your-domain', session=self.session)
 
-    async def upload_file(self, file: Union[tixte.File, discord.File]) -> tixte.FileResponse:
-        return await self.tixte.upload_file(file=file)
+    async def upload_file(self, file: Union[tixte.File, discord.File]) -> tixte.Upload:
+        return await self.tixte.upload_file(file)
 
-    async def delete_file(self, upload_id: Union[str, tixte.FileResponse]) -> None:
-        if isinstance(upload_id, tixte.FileResponse):
-            upload_id = upload_id.id
-        return await self.tixte.delete_file(upload_id=upload_id)
-
+    async def delete_file(self, id: str) -> None:
+        partial = self.tixte.get_partial_upload(id)
+        await partial.delete()
 
 bot = DiscordBot()
-bot.run('token', reconnect=True)
+bot.run('token')
