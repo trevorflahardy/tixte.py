@@ -40,6 +40,8 @@ class Object(object):
 class IDable(Object):
     """Represents a Tixte :class:`Object` with an ID.
     This implements common comparison and hashing methods.
+    
+    This inherits :class:`Object`.
 
     .. container:: operations
 
