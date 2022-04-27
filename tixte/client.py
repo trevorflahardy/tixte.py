@@ -289,7 +289,18 @@ class Client(Object):
         return await self._http.url_to_file(url=url, filename=filename or 'attachment1')
 
     def get_partial_upload(self, id: str, /) -> PartialUpload:
-        """"""
+        """A method used to get a partial upload from its ID.
+        
+        Parameters
+        ----------
+        id: :class:`str`
+            The ID of the partial upload to get.
+            
+        Returns
+        -------
+        :class:`PartialUpload`
+            The partial upload with the given ID.
+        """
         return PartialUpload(state=self._state, id=id)
 
     async def fetch_client_user(self) -> ClientUser:
