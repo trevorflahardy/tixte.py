@@ -29,7 +29,6 @@ __all__: Tuple[str, ...] = ('Object', 'IDable')
 class Object(object):
     """The base object for all objects
     within the Tixte system. Every class inherits from this.
-
     """
 
     def __repr__(self) -> str:
