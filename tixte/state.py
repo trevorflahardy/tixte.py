@@ -47,7 +47,6 @@ class State(Object):
         self,
         dispatch: Callable[..., List[Task[Any]]],
         http: HTTP,
-        **kwargs: Any,
     ) -> None:
         self.dispatch: Callable[..., List[Task[Any]]] = dispatch
         self.http: HTTP = http
