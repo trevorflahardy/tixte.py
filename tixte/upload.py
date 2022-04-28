@@ -36,6 +36,12 @@ class PartialUpload(IDable):
     with only it's ID.
 
     This object can get obtained by calling :meth:`Client.get_partial_upload`.
+    
+    .. container:: operations
+
+        .. describe:: repr(x)
+
+            Returns a string representation of the domain object.
 
     Attributes
     ----------

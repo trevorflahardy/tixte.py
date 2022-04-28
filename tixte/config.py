@@ -41,6 +41,12 @@ class EmbedProtocol(Protocol):
 class Config(Object):
     """
     The base Config class you gget when using get_config.
+    
+    .. container:: operations
+
+        .. describe:: repr(x)
+
+            Returns a string representation of the config object.
 
     Attributes
     ----------

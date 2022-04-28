@@ -34,6 +34,12 @@ __all__: Tuple[str, ...] = ('Domain',)
 class Domain(Object):
     """
     The class that represents a domain.
+    
+    .. container:: operations
+
+        .. describe:: repr(x)
+
+            Returns a string representation of the domain object.
 
     Attributes
     ---------
