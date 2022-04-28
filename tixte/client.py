@@ -111,10 +111,6 @@ class Client(Object):
 
         .. code-block:: python3
 
-            @client.event('on_ready')
-            async def on_ready():
-                print('The client is ready!')
-
             @client.event('on_request')
             async def on_request(response: aiohttp.ClientRequest):
                 print('We requested something!', response.status)
