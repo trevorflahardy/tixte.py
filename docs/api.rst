@@ -25,7 +25,7 @@ Object
 
 .. attributetable:: tixte.abc.Object
 
-.. autoclass:: Object
+.. autoclass:: tixte.abc.Object
     :members:
 
 IDable
@@ -33,7 +33,7 @@ IDable
 
 .. attributetable:: tixte.abc.IDable
 
-.. autoclass:: IDable
+.. autoclass:: tixte.abc.IDable
     :members:
 
 Objects
