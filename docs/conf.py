@@ -44,7 +44,6 @@ extensions = [
     'exception_hierarchy',
     'nitpick_file_ignorer',
     'resourcelinks',
-    'python_docs_theme',
 ]
 
 
@@ -76,8 +75,6 @@ with open('../tixte/__init__.py') as f:
     
 release = version
 
-
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -85,12 +82,16 @@ release = version
 #
 html_theme = 'python_docs_theme'
 
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-# Sidebar information
+# Custom sidebar templates, filenames relative to this file.
 html_sidebars = {
-   '**': ['globaltoc.html', 'sourcelink.html', 'searchbox.html'],
+    # Defaults taken from http://www.sphinx-doc.org/en/stable/config.html#confval-html_sidebars
+    # Removes the quick search block
+    '**': ['localtoc.html', 'relations.html', 'customsourcelink.html'],
+    'index': ['indexsidebar.html'],
 }
