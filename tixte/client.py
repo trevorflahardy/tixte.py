@@ -48,11 +48,6 @@ class Client(Object):
     other objects from the API. The client should be used as a context manager to ensure
     the cleanup of the aiohttp session, but it doesn't have to be.
     
-    .. code-block:: python3
-
-        async with tixte.Client('my_master_key', 'my_domain') as client:
-            ...
-    
     Parameters
     ----------
     master_key: :class:`str`
