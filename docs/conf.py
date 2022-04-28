@@ -37,7 +37,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'attributetable',
     'sphinx.ext.napoleon',
-    'sphinxcontrib-trio',
+    'sphinxcontrib_trio',
     'attributetable',
     'builder',
     'details',
