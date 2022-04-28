@@ -10,7 +10,7 @@ Client
 
 .. autoclass:: Client
     :members:
-    :exclude-members: dispatch
+    :exclude-members: dispatch, event
 
     .. automethod:: Client.event()
         :decorator:
