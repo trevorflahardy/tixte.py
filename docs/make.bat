@@ -25,6 +25,13 @@ if errorlevel 9009 (
 	exit /b 1
 )
 
+%PYTHON% -c "import python_docs_theme" > nul 2> nul
+if errorlevel 1 (
+    echo Installing python-docs-theme with %PYTHON%
+    %PYTHON% -m pip install python-docs-theme
+    if errorlevel 1 exit /B
+)
+
 %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
 goto end
 
