@@ -1,6 +1,8 @@
 """
 The MIT License (MIT)
-Copyright (c) 2015-present Rapptz
+
+Copyright (c) 2021-present NextChai
+
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
 to deal in the Software without restriction, including without limitation
@@ -17,222 +19,346 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+from __future__ import annotations
 
-import aiohttp
-import io
-from typing import Optional, List
+import asyncio
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
+from typing_extensions import Self
 
 from .http import HTTP
-from .file import File, FileResponse
-from .user import ClientUser, User
-from .errors import NotFound
-from .domain import Domain
+from .state import State
+from .abc import Object
+from .utils import OverwrittenCoroutine
 from .config import Config
+from .upload import Upload, PartialUpload
 
-__all__ = (
-    'Client',
-)
+if TYPE_CHECKING:
+    from aiohttp import ClientSession
 
-class Client:
+    from .user import User, ClientUser
+    from .file import File
+    from .domain import Domain
+
+__all__: Tuple[str, ...] = ('Client',)
+
+
+class Client(Object):
     r"""
-    The base Client for the wrapper. 
+    The base Client for the wrapper.
     We'll use this to contain everything and keep it simple.
-    
+
     Parameters
     ----------
     master_key: :class:`str`
-        Your Tixte master key. 
-        
-        How to obtain:
-            > Go to: https://tixte.com/dashboard/configurations
-            
-            > Go to the Console via pressing Ctrl + Shift + I 
-            
-            > Paste in `document.cookie.split("tixte_auth=")[1].split(";")[0]` at the bottom and press enter
-            
-            > Your key should be outputted.
-            
-    domain: Optional[:class:`str`]
-        The domain you want to upload to. 
+        Your Tixte master key. Notes on how this can be obtained can be found
+        on the github readme.
+    domain: :clas:`str`
+        The domain you want to upload to.
         If you haven't already, you need to create a domain at `https://tixte.com/dashboard/domains`
-        
-        ..note:
-            If no domain is specified, the domain with the most amount of uploads will be defaulted.
-        
     session: Optional[:class:`aiohttp.ClientSession`]
-        An optional session to pass into the client for requests.
-        
-    Methods
-    -------
-    upload_file:
-        Upload a file to Tixte.
-    delete_file:
-        Delete a file from Tixte.
-    fetch_user:
-        Fetch a user.
-    file_from_url:
-        Turn an image URL to a File object.
+        An optional session to pass for HTTP requests. If not provided, a new session will be created
+        for you.
     """
+
     def __init__(
         self,
         master_key: str,
+        domain: str,
+        /,
         *,
-        domain: Optional[str] = None,
-        session: Optional[aiohttp.ClientSession] = None,
+        session: Optional[ClientSession] = None,
     ) -> None:
-        self._session = session or aiohttp.ClientSession()
-        self._http = HTTP(master_key, domain=domain, session=self._session)
-        
-    async def upload_file(self, file: File) -> FileResponse:
+        self._http = HTTP(
+            master_key=master_key, domain=domain, session=session, dispatch=self.dispatch
+        )
+
+        self._state: State = State(dispatch=self.dispatch, http=self._http)
+        self._state._get_client = lambda: self  # type: ignore
+
+        self._listeners: Dict[str, List[Callable[..., Any]]] = {}
+
+    # Internal helpers for dispatching
+
+    async def __aenter__(self) -> Self:
+        return self
+
+    async def __aexit__(self, *args: Any) -> Self:
+        await self.cleanup()
+        return self
+
+    def dispatch(self, event: str, *args: Any, **kwargs: Any) -> List[asyncio.Task[Any]]:
+        event_fmt = 'on_' + event
+        tasks: List[asyncio.Task[Any]] = []
+
+        method = getattr(self, event_fmt, None)
+        if method:
+            tasks.append(
+                asyncio.create_task(method(*args, **kwargs), name=f'tixte-dispatcher-{event_fmt}')
+            )
+
+        callables = self._listeners.get(event_fmt, [])
+        for item in callables:
+            tasks.append(
+                asyncio.create_task(item(*args, **kwargs), name=f'tixte-dispatcher-{event_fmt}')
+            )
+
+        return tasks
+
+    def event(
+        self, event: Optional[str] = None
+    ) -> Callable[[OverwrittenCoroutine], OverwrittenCoroutine]:
+        """A decorator used to register a coroutine as a listener for an event.
+
+        .. code-block:: python3
+
+            @client.event('on_ready')
+            async def on_ready():
+                print('The client is ready!')
+
+            @client.event('on_request')
+            async def on_request(response: aiohttp.ClientRequest):
+                print('We requested something!', response.status)
+
+        Parameters
+        ----------
+        event: Optional[:class:`str`]
+            The event to listen for. If not provided, the name of the coroutine will be used.
         """
-        Upload a file.
-        
+
+        def wrapped(func: OverwrittenCoroutine) -> OverwrittenCoroutine:
+            if not asyncio.iscoroutinefunction(func):
+                raise TypeError('event callback must be a coroutine')
+
+            event_name = event or func.__name__
+
+            if not event_name.startswith('on_'):
+                raise ValueError('event name must start with \'on_\'')
+
+            self._listeners.setdefault(event_name, []).append(func)
+
+            return func
+
+        return wrapped
+
+    def remove_listener(
+        self, event: str, *, callback: Optional[OverwrittenCoroutine] = None
+    ) -> None:
+        """A method to remove a listener from an event.
+
+        Parameters
+        ----------
+        event: :class:`str`
+            The event to remove the listener from.
+        callback: Optional[Callable]
+            The callback to remove. If not provided, all listeners for the event will be removed.
+        """
+        if not callback:
+            self._listeners.pop(event, None)
+            return
+        else:
+            listeners = self._listeners.get(event, [])
+            if not listeners:
+                return
+
+            try:
+                listeners.remove(callback)
+            except ValueError:
+                pass
+
+    # Begin public methods
+
+    @property
+    def user(self) -> Optional[ClientUser]:
+        """Optional[:class:`ClientUser`]: The client's user, if in the internal cache."""
+        return self._state.client_user
+
+    @property
+    def users(self) -> List[User]:
+        """List[:class:`User`]: A list of all users within the internal cache."""
+        return list(self._state.users.values())
+
+    @property
+    def domains(self) -> List[Domain]:
+        """List[:class:`Domain`]: A list of all domains within the internal cache."""
+        return list(self._state.domains.values())
+
+    async def cleanup(self) -> None:
+        """|coro|
+
+        A helper coroutine used to cleanup the client's HTTP session. This can be used in one of two ways:
+
+        .. code-block:: python3
+
+            client = tixte.Client('my-token', 'my-domain')
+
+            async with client:
+                # perform operations
+
+            # or
+
+            await client.method()
+            await client.cleanup()
+        """
+        await self._http._session.close()  # type: ignore
+
+    def get_user(self, id: str, /) -> Optional[User]:
+        """Used to get a user from the internal cache of users.
+
+        Parameters
+        ----------
+        id: :class:`str`
+            The ID of the user to get.
+
+        Returns
+        -------
+        Optional[:class:`User`]
+            The user with the given ID, if it exists within the internal cache.
+        """
+        return self._state.get_user(id)
+
+    async def fetch_user(self, id: str, /) -> User:
+        """|coro|
+
+        A coroutine used to fetch a user from its ID.
+
+        Parameters
+        ----------
+        id: :class:`str`
+            The ID of the user to fetch.
+
+        Returns
+        -------
+        Optional[:class:`User`]
+            The user with the given ID, if it exists within the internal cache.
+
+        Raises
+        ------
+        Forbidden
+            You do not have permission to fetch the user.
+        NotFound
+            The user with the given ID does not exist.
+        HTTPException
+            An HTTP error occurred.
+        """
+        data = await self._http.get_user(id)
+        return self._state.store_user(data)
+
+    async def upload_file(self, file: File, /) -> Upload:
+        """|coro|
+
+        A coroutine used to upload a file to Tixte.
+
         Parameters
         ----------
         file: :class:`File`
-            The file obj to upload.
-        
+            The file to upload. Please note ``discord.py``'s file objects work as well.
+
         Returns
         -------
         :class:`FileResponse`
-        """
-        data = await self._http.upload_file(file=file)
-        return FileResponse(self._http, data)
-    
-    async def delete_file(self, upload_id: str) -> None:
-        """
-        Delete a file from it's upload id.
-        
-        Parameters
-        ----------
-        upload_id: :class:`str`
-            The upload_id to delete from. 
-            
-            .. note::
-                This can not be a File obj. If you wish to delete a file directly
-                you can do:
-                
-                ```python
-                await file.delete()
-                ```
-                
-        Returns
-        -------
-        None
-        """
-        return await self._http.delete_file(upload_id)
-    
-    async def fetch_config(self) -> Config:
-        """
-        Fetch your user config. This is mostly the configuration tab on Tixte.
-        
-        Returns
-        -------
-        :class:`Config`
-        """
-        data = await self._http.fetch_config()
-        return Config(self._http, data)
-    
-    async def fetch_client_user(
-        self,
-        *, 
-        set_attrs_to_client: bool = False
-    ) -> ClientUser:
-        """
-        Fetch your user. and get some useful information back.
-        
-        Parameters
-        ----------
-        set_attrs_to_client: Optional[:class:`bool`] = False
-            If you're fetching a ClientUser, you can choose to set all attrs from the ClientUser
-            onto the Client. This means you wouldn't have to do the fetch_user more then once for
-            client information.
-            
-            ```python
-            await client.fetch_user(set_attrs_to_client=True)
-            print(client.id)
-            print(client.email)
-            ```
-        
-        Returns
-        -------
-        :class:`ClientUser`
-        """
-        data = await self._http.fetch_client_user()
-        user = ClientUser(self._http, data)
-        if set_attrs_to_client:
-            user._dump_attrs_to_client(self)
-        return user
-                
-    async def fetch_user(
-        self, 
-        user_id: str
-    ) -> User:
-        """
-        Fetch a user and get some useful information back.
-        
-        ..note:
-            If no user_id is specified, a :class:`ClientUser` will be returned.
-            A ClientUser is yourself.
-            
-        Parameters
-        ----------
-        user_id: str
-            The user_id you want to fetch. This can also work with user name.
-            
-        Returns
-        -------
-        :class:`User`
-        """
-        data = await self._http.fetch_user(user_id)
-        return User(self._http, data)
-    
-    async def fetch_domains(self) -> Optional[List[Domain]]:
-        """
-        Get all your domain data.
-        
-        Returns
-        -------
-        :class:`Domain`
-        """
-        data = await self._http.fetch_domains()
-        domains = []
-        for entry in data['domains']:
-            local_domain = Domain(entry)
-            if hasattr(self, '_raw_user'):
-                if self.id == entry['owner']:  # We own this
-                    user = User(self._http, self._raw_user)
-                    local_domain.owner = user
-                    domains.append(local_domain)
-                    continue
-            try:
-                user = await self.fetch_user(entry['owner'])
-                local_domain.owner = user
-            except NotFound:
-                continue
-            domains.append(local_domain)
-            
-        return domains
+            The response from the upload.
 
-    async def url_to_file(
-        self, 
-        url: str, 
-        *,
-        filename: str
-    ) -> Optional[File]:
+        Raises
+        ------
+        Forbidden
+            You do not have permission to upload this file.
+        HTTPException
+            An HTTP error occurred.
         """
-        Use a file URL and turn it into a File obj.
-        
+        data = await self._http.upload_file(file)
+        return Upload(state=self._state, data=data)
+
+    async def url_to_file(self, url: str, /, *, filename: Optional[str] = None) -> File:
+        """|coro|
+
+        A helper coroutine to convert a URL to a :class:`File`.
+
         Parameters
         ----------
         url: :class:`str`
-            The url to turn into a file obj.
-        filename: :class:`str`
-            The filename you want the File obj to be.
-            
+            The URL to convert.
+        filename: Optional[:class:`str`]
+            The filename to use for the file. If not provided, ``attachment1`` will be used
+            instead.
+
         Returns
         -------
         :class:`File`
+            The file with the given URL.
         """
-        return await self._http.url_to_file(url=url, filename=filename)
-    
+        return await self._http.url_to_file(url=url, filename=filename or 'attachment1')
+
+    def get_partial_upload(self, id: str, /) -> PartialUpload:
+        """A method used to get a partial upload from its ID.
+
+        Parameters
+        ----------
+        id: :class:`str`
+            The ID of the partial upload to get.
+
+        Returns
+        -------
+        :class:`PartialUpload`
+            The partial upload with the given ID.
+        """
+        return PartialUpload(state=self._state, id=id)
+
+    async def fetch_client_user(self) -> ClientUser:
+        """|coro|
+
+        A coroutine used to fetch the client's user. Once fetched for the first time,
+        this can be accessed via the :attr:`user` attribute.
+
+        Returns
+        -------
+        :class:`ClientUser`
+            The client's user.
+        """
+        data = await self._http.get_client_user()
+        return self._state.store_client_user(data)
+
+    def get_domain(self, url: str) -> Optional[Domain]:
+        """Gets a domain from the internal cache of domains.
+
+        Parameters
+        ----------
+        name: :class:`str`
+            The url of the domain to get.
+
+        Returns
+        -------
+        Optional[:class:`Domain`]
+            The domain with the given url, if it exists within the internal cache.
+        """
+        return self._state.get_domain(url)
+
+    async def fetch_domains(self) -> List[Domain]:
+        """|coro|
+
+        A coroutine to fetch all domains registered with Tixte.
+
+        Returns
+        -------
+        List[:class:`Domain`]
+            A list of all domains registered with Tixte.
+        """
+        data = await self._http.get_domains()
+
+        for entry in data['domains']:
+            self._state.store_domain(entry)
+
+        return list(self._state.domains.values())
+
+    async def fetch_config(self) -> Config:
+        """|coro|
+
+        A coroutine used to fetch the configuration settings
+        you have within Tixte.
+
+        Returns
+        -------
+        :class:`Config`
+            The configuration settings.
+        """
+        data = await self._http.get_config()
+        return Config(state=self._state, data=data)

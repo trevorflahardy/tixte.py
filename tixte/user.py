@@ -1,6 +1,8 @@
 """
 The MIT License (MIT)
-Copyright (c) 2015-present Rapptz
+
+Copyright (c) 2021-present NextChai
+
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
 to deal in the Software without restriction, including without limitation
@@ -17,35 +19,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+from __future__ import annotations
 
 import datetime
 from typing import (
-    Any, 
+    TYPE_CHECKING,
+    Any,
     Dict,
-    Optional, 
-    Union,
-    ClassVar
+    Optional,
+    Tuple,
 )
 
 from .file import File
+from .abc import IDable
 
-__all__ = (
+if TYPE_CHECKING:
+    from .state import State
+
+__all__: Tuple[str, ...] = (
     'User',
     'ClientUser',
 )
 
-class User:
+
+class User(IDable):
     """
     The base User class.
-    
+
     Attributes
     ----------
     id: :class:`str`
-        The ID of the clientuser.
+        The ID of the user.
     username: :class:`str`
-        The username of the clientuser.
+        The username of the user.
     pro: :class:`bool`
-        Whether or not the user has pro.
+        Whether the user is a pro.
     beta: :class:`bool`
         Whether or not the user is in the beta.
     admin: :class:`bool`
@@ -55,123 +63,98 @@ class User:
     avatar: Optional[:class:`str`]
         The user's avatar, if any.
     """
-    
-    __slots__ = ('_status', '_raw', 'id', 'username', 'avatar', 'pro', 'beta', 'admin', 'staff')
-    
-    def __init__(
-        self,
-        status: Any,
-        data: Dict[str, Union[str, bool]]
-    ) -> None:
-        self._status = status
-        self._raw = data
-        
+
+    __slots__: Tuple[str, ...] = (
+        '_state',
+        'id',
+        'username',
+        'avatar',
+        'pro',
+        'beta',
+        'admin',
+        'staff',
+    )
+
+    def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
+        self._state: State = state
+
         self.id: str = data['id']
         self.username: str = data['username']
         self.avatar: Optional[str] = data['avatar']
-        self.pro: bool = data['pro']
-        self.beta: bool = data['beta']
-        self.admin: bool = data['admin']
-        self.staff: bool = data['staff']
-        
+        self.beta: Optional[bool] = data.get('beta')
+        self.admin: Optional[bool] = data.get('admin', None)
+        self.staff: Optional[bool] = data.get('staff')
+        self.pro: Optional[bool] = data.get('pro')
+
     def __str__(self) -> str:
         return self.username
-    
-    def __eq__(self, o: object) -> bool:
-        return self.id == o.id
-    
+
     def __repr__(self) -> str:
-        return f'<User {self.id} {self.username}>'
-    
-    async def save_avatar(
-        self, 
-    ) -> Optional[File]:
+        return '<User id={0.id} username={0.username} avatar={0.avatar} pro={0.pro} beta={0.beta} admin={0.admin} staff={0.staff}>'.format(
+            self
+        )
+
+    async def save_avatar(self, *, filename: str) -> Optional[File]:
         """
         Save the user's avatar to a :class:`File` obj.
         Could return None if the user has not set an avatar.
-        
+
         Returns
         -------
         Optional[:class:`File`]
         """
         if not self.avatar:
             return None
-        return self._status.url_to_file(self.avatar)
-        
-        
-        
+
+        return await self._state.http.url_to_file(url=self.avatar, filename=filename)
+
 
 class ClientUser(User):
     """
-    The Clent's User profile. Because the client acts on behalf of your upload key, this fetches
-    YOUR information.
+    The Clent's User profile. This contains metadata specific to the user,
+    such as their email address and phone number.
     
+    This inherits from :class:`User`.
+
     Attributes
     ----------
-    id: :class:`str`
-        The ID of the clientuser.
-    username: :class:`str`
-        The username of the clientuser.
     mfa_enabled: :class:`bool`
         Whether or not the user has MFA enabled.
-    pro: :class:`bool`
-        Whether or not the user has pro.
-    beta: :class:`bool`
-        Whether or not the user is in the beta.
-    admin: :class:`bool`
-        Whether or not the user is an admin.
-    staff: :class:`bool`
-        Whether or not the user is staff.
     email: :class:`str`
         The email registered to the user.
     email_verified: :class:`bool`
         If the email has been verified.
     phone: Optional[Any]
         The phone, if any, linked to the user account.
-            ..note:
-                I do not know if this is a str, I've never seen it.
-                Please PR it if you have it filled in to get it updated.
-    avatar: Optional[:class:`str`]
-        The user's avatar, if any.
     upload_region: :class:`str`
         The user's upload region.
-    raw_last_login: :class:`str`
-        The user's raw last login.
-    last_login: :class:`datetime.datetime`
-        The user's raw_last_login formatted into datetime.
     """
-    
-    __slots__ = ('_raw', '_status', 'id', 'username', 'mfa_enabled', 'pro', 'beta', 'admin', 'staff', 'email', 'email_verified', 'phone', 'avatar', 'upload_region', 'raw_last_login')
-    
-    def __init__(
-        self,
-        status: Any,
-        data: Dict[str, Union[str, bool]]
-    ) -> None:
-        super().__init__(status, data)
-        
+
+    __slots__: Tuple[str, ...] = (
+        'mfa_enabled',
+        'email',
+        'email_verified',
+        'phone',
+        'upload_region',
+        '_last_login',
+    )
+
+    def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
+        super().__init__(state=state, data=data)
+
         self.mfa_enabled: bool = data['mfa_enabled']
         self.email: str = data['email']
         self.email_verified: bool = data['email_verified']
         self.phone: Optional[Any] = data['phone']
         self.upload_region: str = data['upload_region']
-        self.raw_last_login = data['last_login']
-        
-        self._raw: ClassVar[Dict] = data
-        self._status: Any = status
-    
+        self._last_login = data['last_login']
+
+    def __repr__(self) -> str:
+        return '<ClientUser id={0.id} username={0.username} avatar={0.avatar} pro={0.pro} beta={0.beta} admin={0.admin} staff={0.staff} email={0.email} email_verified={0.email_verified} phone={0.phone} upload_region={0.upload_region} mfa_enabled={0.mfa_enabled}>'.format(
+            self
+        )
+
     @property
     def last_login(self) -> datetime.datetime:
-        return datetime.datetime.strftime(self.raw_last_login, '%Y-%m-%dT%H:%M:%S.%fZ')
-
-    def _dump_attrs_to_client(self, client):
-        ignored = ('_raw', '_status')
-        total = {}
-        for slot in self.__slots__:
-            if slot in ignored:
-                continue
-            value = getattr(self, slot)
-            setattr(client, slot, value)
-            total[slot] = value
-        setattr(client, '_raw_user', total)
-        
+        """:class:`datetime.datetime`: The last time the user logged in."""
+        return datetime.datetime.strptime(self._last_login, '%Y-%m-%dT%H:%M:%S.%fZ')

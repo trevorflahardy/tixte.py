@@ -21,10 +21,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from __future__ import annotations
 
-import json
-from typing import Any, Dict
+from typing import Any, Awaitable, Callable, Dict, Tuple, TypeAlias, TypeVar
 
+__all__: Tuple[str, ...] = ('to_json',)
 
-def to_json(string: str) -> Dict[Any, Any]:
-    return json.loads(string)
+OverwrittenCoroutine: TypeAlias = Callable[..., Awaitable[Any]]
+T = TypeVar('T')
+
+try:
+    import orjson
+
+    _has_orjson: bool = True
+except ImportError:
+    _has_orjson: bool = False
+    import json
+
+if _has_orjson:
+
+    def to_json(string: str) -> Dict[Any, Any]:
+        return orjson.loads(string)
+
+else:
+
+    def to_json(string: str) -> Dict[Any, Any]:
+        return json.loads(string)
