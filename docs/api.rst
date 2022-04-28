@@ -6,8 +6,7 @@ API Reference
 Client
 ------
 
-Client
-~~~~~~
+.. attributetable:: Client
 
 .. autoclass:: Client
     :members:
@@ -22,11 +21,15 @@ ABC
 Object
 ~~~~~~~
 
+.. attributetable:: tixte.abc.Object
+
 .. autoclass:: tixte.abc.Object
     :members:
 
 IDable
 ~~~~~~
+
+.. attributetable:: tixte.abc.IDable
 
 .. autoclass:: tixte.abc.IDable
     :members:
@@ -37,11 +40,15 @@ Objects
 Configuration
 ~~~~~~~~~~~~~
 
+.. attributetable:: Config
+
 .. autoclass:: Config
     :members:
 
 Domain
 ~~~~~~
+
+.. attributetable:: Domain
 
 .. autoclass:: Domain
     :members:
@@ -49,11 +56,15 @@ Domain
 File 
 ~~~~
 
+.. attributetable:: File
+
 .. autoclass:: File
     :members:
 
 PartialUpload
 ~~~~~~~~~~~~~
+
+.. attributetable:: PartialUpload
 
 .. autoclass:: PartialUpload
     :members:
@@ -61,11 +72,15 @@ PartialUpload
 Upload
 ~~~~~~
 
+.. attributetable:: Upload
+
 .. autoclass:: Upload
     :members:
 
 DeleteResponse
 ~~~~~~~~~~~~~~
+
+.. attributetable:: DeleteResponse
 
 .. autoclass:: DeleteResponse
     :members:
@@ -76,11 +91,15 @@ Users
 User
 ~~~~
 
+.. attributetable:: User
+
 .. autoclass:: User
     :members:
 
 ClientUser
 ~~~~~~~~~~
+
+.. attributetable:: ClientUser
 
 .. autoclass:: ClientUser
     :members:

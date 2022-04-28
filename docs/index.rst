@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to tixte.py's documentation!
-=================================
+====================================
 
 tixte.py is a modern, easy to use, and powerful tool for creating and managing
 tixte images.
