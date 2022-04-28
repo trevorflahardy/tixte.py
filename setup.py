@@ -13,10 +13,18 @@ version = ''
 with open('tixte/__init__.py') as f:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
 
+extras_require = {
+    'docs': [
+        'sphinx==4.4.0',
+        'sphinxcontrib_trio==1.1.2',
+        'sphinxcontrib-websupport',
+        'typing-extensions',
+    ],
+}
 
 setup(
     author='NextChai',
-    name='tixte',
+    name='tixte.py',
     description='The async wrapper for the Tixte API.',
     long_description=readme,
     long_description_content_type='text/markdown',
@@ -42,4 +50,5 @@ setup(
             "square=square.__main__:main",
         ]
     },  
+    extras_require=extras_require,
 )
