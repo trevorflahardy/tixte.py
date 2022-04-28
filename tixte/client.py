@@ -43,7 +43,8 @@ __all__: Tuple[str, ...] = ('Client',)
 
 
 class Client(Object):
-    """The base Client for the wrapper. Every method on the Client class is used to get 
+    """
+    The base Client for the wrapper. Every method on the Client class is used to get 
     other objects from the API. The client should be used as a context manager to ensure
     the cleanup of the aiohttp session, but it doesn't have to be.
     
