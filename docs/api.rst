@@ -12,6 +12,7 @@ Client
 .. autoclass:: Client
     :members:
     :exclude-members: dispatch
+    :async-with:
 
     .. automethod:: Client.event()
         :decorator:
@@ -84,6 +85,7 @@ ClientUser
 
 .. autoclass:: ClientUser
     :members:
+    :inherited-members:
 
 Exceptions
 ----------
