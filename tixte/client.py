@@ -44,15 +44,21 @@ __all__: Tuple[str, ...] = ('Client',)
 
 class Client(Object):
     r"""
-    The base Client for the wrapper.
-    We'll use this to contain everything and keep it simple.
+    The base Client for the wrapper. Every method on the Client class is used to get 
+    other objects from the API. The client should be used as a context manager to ensure
+    the cleanup of the aiohttp session, but it doesn't have to be.
+    
+    .. code-block:: python3
 
+        async with tixte.Client('my_master_key', 'my_domain') as client:
+            ...
+    
     Parameters
     ----------
     master_key: :class:`str`
         Your Tixte master key. Notes on how this can be obtained can be found
         on the github readme.
-    domain: :clas:`str`
+    domain: :class:`str`
         The domain you want to upload to.
         If you haven't already, you need to create a domain at `https://tixte.com/dashboard/domains`
     session: Optional[:class:`aiohttp.ClientSession`]
@@ -181,19 +187,7 @@ class Client(Object):
     async def cleanup(self) -> None:
         """|coro|
 
-        A helper coroutine used to cleanup the client's HTTP session. This can be used in one of two ways:
-
-        .. code-block:: python3
-
-            client = tixte.Client('my-token', 'my-domain')
-
-            async with client:
-                # perform operations
-
-            # or
-
-            await client.method()
-            await client.cleanup()
+        A helper coroutine used to cleanup the client's HTTP session.
         """
         await self._http._session.close()  # type: ignore
 
@@ -331,7 +325,8 @@ class Client(Object):
     async def fetch_domains(self) -> List[Domain]:
         """|coro|
 
-        A coroutine to fetch all domains registered with Tixte.
+        A coroutine to fetch all domains registered with Tixte. Once fetched 
+        once, you can get all of the domains via :attr:`domains`.
 
         Returns
         -------
