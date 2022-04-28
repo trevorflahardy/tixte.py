@@ -38,7 +38,7 @@ extensions = [
     'attributetable',
     'sphinx.ext.napoleon',
     'sphinxcontrib_trio',
-    'attributetable',
+    #'attributetable',
     'builder',
     'details',
     'exception_hierarchy',
