@@ -1179,7 +1179,7 @@ main img.align-right {
 }
 
 /* hide the welcome text */
-section#welcome-to-discord-py > h1 {
+section#welcome-to-tixte-py > h1 {
   display: none;
 }
 
