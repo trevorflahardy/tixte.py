@@ -28,10 +28,6 @@ project = 'tixte'
 copyright = '2022, NextChai'
 author = 'NextChai'
 
-# The full version, including alpha/beta/rc tags
-release = '0.0.6'
-
-
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
