@@ -40,11 +40,8 @@ class File(Object):
     fp: Union[:class:`os.PathLike`, :class:`io.BufferedIOBase`]
         A file-like object opened in binary mode and read mode
         or a filename representing a file in the hard drive to
-        open.
-        .. note::
-            If the file-like object passed is opened via ``open`` then the
-            modes 'rb' should be used.
-            To pass binary data, consider usage of ``io.BytesIO``.
+        open. Please note, if the file-like object passed is opened via ``open`` then the
+        modes 'rb' should be used. To pass binary data, consider usage of ``io.BytesIO``.
     filename: Optional[:class:`str`]
         The filename to display when uploading to Discord.
         If this is not given then it defaults to ``fp.name`` or if ``fp`` is
