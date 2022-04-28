@@ -41,7 +41,7 @@ class TixteException(Exception, Object):
     """The base Tixte Exception. All Tixte Exceptions inherit from this."""
 
     __slots__: Tuple[str, ...] = ()
-    
+
 
 class HTTPException(TixteException):
     """An exception raised when an HTTP Exception occurs from the API.
@@ -53,23 +53,26 @@ class HTTPException(TixteException):
     data: :class:`Any`
         The data returned from the API.
     """
-    
-    __slots__: Tuple[str, ...] = ('response', 'data',)
+
+    __slots__: Tuple[str, ...] = (
+        'response',
+        'data',
+    )
 
     def __init__(self, response: ClientResponse, data: Any, *args: Any, **kwargs: Any) -> None:
         self.response: ClientResponse = response
         self.data: Any = data
-        
+
         self.message: Optional[str]
         self.code: Optional[str]
-        
+
         if isinstance(data, dict):
-            self.message = data.get('error', {}).get('message') # type: ignore
-            self.code = data.get('error', {}).get('code') # type: ignore
+            self.message = data.get('error', {}).get('message')  # type: ignore
+            self.code = data.get('error', {}).get('code')  # type: ignore
         else:
             self.message = None
             self.code = None
-        
+
         message_fmt = f'{self.code or "No code."}: {self.message or "No message"}.'
         super().__init__(message_fmt, *args, **kwargs)
 

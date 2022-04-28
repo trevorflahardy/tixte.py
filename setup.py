@@ -7,8 +7,8 @@ readme = (here / "README.md").read_text()
 
 requirements = []
 with open('requirements.txt') as f:
-  requirements = f.read().splitlines()
-  
+    requirements = f.read().splitlines()
+
 version = ''
 with open('tixte/__init__.py') as f:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
@@ -41,15 +41,13 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
     ],
-    packages=[
-        'tixte'
-    ],
+    packages=['tixte'],
     include_package_data=True,
     install_requires=requirements,
     entry_points={
         "console_scripts": [
             "square=square.__main__:main",
         ]
-    },  
+    },
     extras_require=extras_require,
 )

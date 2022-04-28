@@ -37,9 +37,16 @@ __all__: Tuple[str, ...] = ('State',)
 
 
 class State(Object):
-    
-    __slots__: Tuple[str, ...] = ('dispatch', 'http', 'users', 'client_user', 'domains', '_get_client')
-    
+
+    __slots__: Tuple[str, ...] = (
+        'dispatch',
+        'http',
+        'users',
+        'client_user',
+        'domains',
+        '_get_client',
+    )
+
     if TYPE_CHECKING:
         _get_client: Callable[..., Client]
 

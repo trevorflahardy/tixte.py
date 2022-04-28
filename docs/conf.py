@@ -72,7 +72,7 @@ exclude_patterns = []
 version = ''
 with open('../tixte/__init__.py') as f:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
-    
+
 release = version
 
 # -- Options for HTML output -------------------------------------------------

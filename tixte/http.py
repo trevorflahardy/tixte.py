@@ -85,9 +85,12 @@ class Route:
 
 
 class ExpandableRoute(Route):
-    
-    __slots__: Tuple[str, ...] = ('url', 'method',)
-    
+
+    __slots__: Tuple[str, ...] = (
+        'url',
+        'method',
+    )
+
     def __init__(self, method: str, url: str, **parameters: Any) -> None:
         if parameters:
             try:

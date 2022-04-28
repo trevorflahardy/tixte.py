@@ -24,5 +24,6 @@ class DiscordBot(commands.Bot):
         partial = self.tixte.get_partial_upload(id)
         await partial.delete()
 
+
 bot = DiscordBot()
 bot.run('token')

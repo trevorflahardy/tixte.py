@@ -113,7 +113,7 @@ class ClientUser(User):
     """
     The Clent's User profile. This contains metadata specific to the user,
     such as their email address and phone number.
-    
+
     This inherits from :class:`User`.
 
     Attributes
