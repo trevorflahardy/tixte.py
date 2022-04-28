@@ -33,12 +33,12 @@ from typing import (
     Optional,
     Dict,
     Tuple,
-    TypeAlias,
     Union,
     TypeVar,
     Callable,
     List,
 )
+from typing_extensions import TypeAlias
 
 from .errors import Forbidden, NotFound, TixteServerError, HTTPException
 from .file import File

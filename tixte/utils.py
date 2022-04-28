@@ -23,7 +23,8 @@ SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import Any, Awaitable, Callable, Dict, Tuple, TypeAlias, TypeVar
+from typing import Any, Awaitable, Callable, Dict, Tuple, TypeVar
+from typing_extensions import TypeAlias
 
 __all__: Tuple[str, ...] = ('to_json',)
 
