@@ -1,4 +1,6 @@
 # tixte.py
+[![Documentation Status](https://readthedocs.org/projects/tixtepy/badge/?version=latest)](https://tixtepy.readthedocs.io/en/latest/?badge=latest)
+
 The async wrapper for the Tixte API.
 
 # Installing
@@ -26,4 +28,11 @@ localStorage.getItem("sessionToken")
 4. The response outputted into the console is your master token.
 
 # Documentation
-[![Documentation Status](https://readthedocs.org/projects/tixtepy/badge/?version=latest)](https://tixtepy.readthedocs.io/en/latest/?badge=latest)
+
+Documentation is available [here](https://tixtepy.readthedocs.io/en/latest/). 
+
+Please note the layout and style for the documentation and all
+of the source that goes along with it is directly from [Rapptz/discord.py](https://github.com/Rapptz/discord.py). 
+
+All credit for the source of the documentation goes to Rapptz and his group is contributors. In my experience with sphinx, 
+there is nothing close to how well put together this style of documentation is, it's a pleasure to work with it.
