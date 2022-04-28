@@ -23,10 +23,10 @@ from __future__ import annotations
 
 from typing import NamedTuple
 
-__version__: str = '0.0.6'
-__author__: str = 'NextChai'
-__license__: str = 'MIT'
-__copyright__: str = 'Copyright (c) 2021-present NextChai'
+__version__ = '0.0.6'
+__author__ = 'NextChai'
+__license__ = 'MIT'
+__copyright__ = 'Copyright (c) 2021-present NextChai'
 
 from .client import *
 from .config import *
