@@ -44,7 +44,7 @@ __all__: Tuple[str, ...] = (
 
 class User(IDable):
     """This class holds all attributes and methods that are unique to users.
-    
+
     .. container:: operations
 
         .. describe:: repr(x)
@@ -105,7 +105,7 @@ class User(IDable):
 
     async def save_avatar(self, *, filename: str) -> Optional[File]:
         """|coro|
-        
+
         Save the user's avatar to a :class:`File` obj.
         Could return ``None`` if the user has not set an avatar.
 
