@@ -37,6 +37,7 @@ from .user import *
 from .upload import *
 
 
+
 class VersionInfo(NamedTuple):
     major: int
     minor: int

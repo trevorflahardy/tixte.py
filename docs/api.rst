@@ -23,7 +23,7 @@ ABC
 Object
 ~~~~~~~
 
-.. attributetable:: Object
+.. attributetable:: tixte.abc.Object
 
 .. autoclass:: Object
     :members:
@@ -31,7 +31,7 @@ Object
 IDable
 ~~~~~~
 
-.. attributetable:: IDable
+.. attributetable:: tixte.abc.IDable
 
 .. autoclass:: IDable
     :members:
