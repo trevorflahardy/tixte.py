@@ -24,3 +24,6 @@ to access and make requests to the API. It can be obtained by:
 localStorage.getItem("sessionToken")
 ```
 4. The response outputted into the console is your master token.
+
+# Documentation
+[![Documentation Status](https://readthedocs.org/projects/tixtepy/badge/?version=latest)](https://tixtepy.readthedocs.io/en/latest/?badge=latest)
