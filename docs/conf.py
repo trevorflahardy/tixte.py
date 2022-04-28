@@ -174,8 +174,8 @@ html_theme = 'basic'
 html_context = {}
 
 resource_links = {
-  'issues': 'https://github.com/Rapptz/tixte.py/issues',
-  'discussions': 'https://github.com/Rapptz/tixte.py/discussions',
+  'issues': 'https://github.com/NextChai/tixte.py/issues',
+  'discussions': 'https://github.com/NextChai/tixte.py/discussions',
   'examples': f'https://github.com/NextChai/tixte.py/tree/{branch}/examples',
 }
 
@@ -300,7 +300,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   ('index', 'tixte.py.tex', 'tixte.py Documentation',
-   'Rapptz', 'manual'),
+   'NextChai', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -330,7 +330,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'tixte.py', 'tixte.py Documentation',
-     ['Rapptz'], 1)
+     ['NextChai'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -344,7 +344,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'tixte.py', 'tixte.py Documentation',
-   'Rapptz', 'tixte.py', 'One line description of project.',
+   'NextChai', 'tixte.py', 'One line description of project.',
    'Miscellaneous'),
 ]
 
