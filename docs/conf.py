@@ -44,6 +44,7 @@ extensions = [
     'exception_hierarchy',
     'nitpick_file_ignorer',
     'resourcelinks',
+    'python_docs_theme',
 ]
 
 
