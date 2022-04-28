@@ -38,10 +38,10 @@ class Object(object):
 
 
 class IDable(Object):
-    """Represents a Tixte :class:`Object` with an ID.
+    """Represents a Tixte :class:`~tixte.abc.Object` with an ID.
     This implements common comparison and hashing methods.
 
-    This inherits :class:`Object`.
+    This inherits :class:`~tixte.abc.Object`.
 
     .. container:: operations
 
