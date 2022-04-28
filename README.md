@@ -1,4 +1,4 @@
-# Tixte
+# tixte.py
 The async wrapper for the Tixte API.
 
 # Installing
