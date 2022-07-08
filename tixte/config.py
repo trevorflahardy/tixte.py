@@ -75,7 +75,7 @@ class Config(Object):
         self._embed: Dict[Any, Any] = data['embed']
 
     def __repr__(self) -> str:
-        return '<Config custom_css={0.custom_css} hide_branding={0.hide_branding} base_redirect={0.base_redirect}>'.format(
+        return '<Config custom_css={0.custom_css!r} hide_branding={0.hide_branding!r} base_redirect={0.base_redirect!r}>'.format(
             self
         )
 
@@ -106,7 +106,11 @@ class Config(Object):
         ----------
         embed_cls: :class:`EmbedProtocol`
             The embed class you want to use. Must implement
-            a ``from_dict`` classmethod.
+            a ``from_dict`` classmethod. Something you could pass here
+            would be a `discord_Embed`_ class.
+
+            .. _discord_Embed: https://discordpy.readthedocs.io/en/latest/api.html?highlight=embed#discord.Embed
+
 
         Returns
         -------
