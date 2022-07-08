@@ -32,6 +32,7 @@ from typing import (
 
 from .file import File
 from .abc import IDable
+from .utils import parse_time
 
 if TYPE_CHECKING:
     from .state import State
@@ -49,11 +50,23 @@ class User(IDable):
 
         .. describe:: repr(x)
 
-            Returns a string representation of the domain object.
+            Returns a string representation of the User.
 
         .. describe:: str(x)
 
             Returns the username of the user.
+            
+        .. describe:: x == y
+
+            Deteremines if two Users are equal.
+
+        .. describe:: x != y
+
+            Deteremines if two Users are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the hash of the User.
 
     Attributes
     ----------
@@ -126,6 +139,28 @@ class ClientUser(User):
     such as their email address and phone number.
 
     This inherits from :class:`User`.
+    
+    .. container:: operations
+
+        .. describe:: repr(x)
+
+            Returns a string representation of the ClientUser.
+
+        .. describe:: str(x)
+
+            Returns the username of the ClientUser.
+            
+        .. describe:: x == y
+
+            Deteremines if two ClientUsers are equal.
+
+        .. describe:: x != y
+
+            Deteremines if two ClientUsers are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the hash of the ClientUser.
 
     Attributes
     ----------
@@ -161,11 +196,11 @@ class ClientUser(User):
         self._last_login = data['last_login']
 
     def __repr__(self) -> str:
-        return '<ClientUser id={0.id} username={0.username} avatar={0.avatar} pro={0.pro} beta={0.beta} admin={0.admin} staff={0.staff} email={0.email} email_verified={0.email_verified} phone={0.phone} upload_region={0.upload_region} mfa_enabled={0.mfa_enabled}>'.format(
+        return '<ClientUser id={0.id!r} username={0.username!r} avatar={0.avatar!r} pro={0.pro!r} beta={0.beta!r} admin={0.admin!r} staff={0.staff!r} email={0.email!r} email_verified={0.email_verified!r} phone={0.phone!r} upload_region={0.upload_region!r} mfa_enabled={0.mfa_enabled!r}>'.format(
             self
         )
 
     @property
     def last_login(self) -> datetime.datetime:
         """:class:`datetime.datetime`: The last time the user logged in."""
-        return datetime.datetime.strptime(self._last_login, '%Y-%m-%dT%H:%M:%S.%fZ')
+        return parse_time(self._last_login)
