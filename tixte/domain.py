@@ -40,6 +40,20 @@ class Domain(Object):
         .. describe:: repr(x)
 
             Returns a string representation of the domain object.
+            
+        .. describe:: x == y
+
+            Deteremines if two domains are equal. This will compare using the url, upload count, and owner ID.
+            If you are comparing two equal domains with different uploads, they will show as not equal.
+
+        .. describe:: x != y
+
+            Deteremines if two domains are not equal. This will compare using the url, upload count, and owner ID.
+            If you are comparing two equal domains with different uploads, they will show as not equal.
+
+        .. describe:: hash(x)
+
+            Returns the hash of the domain.
 
     Attributes
     ---------
@@ -61,8 +75,17 @@ class Domain(Object):
         self.owner_id: str = data['owner']
 
     def __repr__(self) -> str:
-        return '<Domain url={0.url} uploads={0.uploads}>'.format(self)
-
+        return '<Domain url={0.url!r} uploads={0.uploads!r}>'.format(self)
+    
+    def __eq__(self, __o: Any) -> bool:
+        return self.url == __o.url and self.uploads == __o.uploads and self.owner_id == __o.owner_id
+    
+    def __ne__(self, __o: object) -> bool:
+        return not self.__eq__(__o)
+    
+    def __hash__(self) -> int:
+        return hash((self.url, self.uploads, self.owner_id))
+    
     @property
     def owner(self) -> Optional[User]:
         """Optional[:class:`User`]: The owner of the domain, ``None`` if not cached."""
