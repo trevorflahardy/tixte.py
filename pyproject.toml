@@ -2,3 +2,8 @@
 line-length = 100
 skip-string-normalization = true
 
+[tool.pyright]
+typeCheckingMode = "strict"
+reportUnnecessaryTypeIgnoreComment = "warning"
+reportUnusedImport = "error"
+pythonVersion = "3.8"
