@@ -23,13 +23,11 @@ SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import Any, Awaitable, Callable, Dict, Tuple, TypeVar
-from typing_extensions import TypeAlias
+import datetime
+from typing import Any, Dict, Tuple
 
 __all__: Tuple[str, ...] = ('to_json',)
 
-OverwrittenCoroutine: TypeAlias = Callable[..., Awaitable[Any]]
-T = TypeVar('T')
 
 try:
     import orjson
@@ -48,3 +46,7 @@ else:
 
     def to_json(string: str) -> Dict[Any, Any]:
         return json.loads(string)
+
+
+def parse_time(time_strp: str) -> datetime.datetime:
+    return datetime.datetime.strptime(time_strp, '%Y-%m-%dT%H:%M:%S.%fZ')
