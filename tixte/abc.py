@@ -75,4 +75,4 @@ class IDable(Object):
         return hash(self.id)
 
     def __repr__(self) -> str:
-        return '<IDable id={0.id}>'.format(self)
+        return '<IDable id={0.id!r}>'.format(self)
