@@ -105,6 +105,18 @@ ClientUser
     :members:
     :inherited-members:
 
+
+Event Reference
+----------------
+
+Events
+~~~~~~
+.. function:: on_request(response)
+
+    A listener that gets dispatched everytime a request is made from the library.
+
+    :param aiohttp.ClientResponse response: The response from the server when making a HTTP request.
+
 Exceptions
 ----------
 
