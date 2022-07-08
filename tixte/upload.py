@@ -41,7 +41,19 @@ class PartialUpload(IDable):
 
         .. describe:: repr(x)
 
-            Returns a string representation of the domain object.
+            Returns a string representation of the partial upload.
+            
+        .. describe:: x == y
+
+            Deteremines if two partial uploads are equal.
+
+        .. describe:: x != y
+
+            Deteremines if two partial uploads are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the hash of the partial upload.
 
     Attributes
     ----------
@@ -73,8 +85,27 @@ class PartialUpload(IDable):
 
 
 class Upload(PartialUpload):
-    """
-    The base FileResponse obj you get back when uploading an image.
+    """The class that represents the response from Tixte when uploading a file.
+
+    This inherits :class:`PartialUpload`.
+    
+    .. container:: operations
+
+        .. describe:: repr(x)
+
+            Returns a string representation of the upload.
+            
+        .. describe:: x == y
+
+            Deteremines if two uploads are equal.
+
+        .. describe:: x != y
+
+            Deteremines if two uploads are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the hash of the upload.
 
     Attributes
     ----------
@@ -90,7 +121,14 @@ class Upload(PartialUpload):
         The Direct URL for the newly uploaded image.
     """
 
-    __slots__: Tuple[str, ...] = ('_state', 'id', 'filename', 'extension', 'url', 'direct_url')
+    __slots__: Tuple[str, ...] = (
+        '_state',
+        'id',
+        'filename',
+        'extension',
+        'url',
+        'direct_url',
+    )
 
     def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
         self._state: State = state
@@ -102,7 +140,7 @@ class Upload(PartialUpload):
         self.direct_url: str = data['direct_url']
 
     def __repr__(self) -> str:
-        return '<Upload id={0.id} filename={0.filename} extension={0.extension} url={0.url} direct_url={0.direct_url}>'.format(
+        return '<Upload id={0.id!r} filename={0.filename!r} extension={0.extension!r} url={0.url!r} direct_url={0.direct_url!r}>'.format(
             self
         )
 
@@ -126,4 +164,4 @@ class DeleteResponse(Object):
         self.message: str = data['message']
 
     def __repr__(self) -> str:
-        return '<DeleteResponse message={0.message}>'.format(self)
+        return '<DeleteResponse message={0.message!r}>'.format(self)
