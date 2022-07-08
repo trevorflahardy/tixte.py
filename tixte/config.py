@@ -104,7 +104,7 @@ class Config(Object):
 
         Parameters
         ----------
-        embed_cls: :class:`EmbedProtocol`
+        embed_cls: EmbedProtocol
             The embed class you want to use. Must implement
             a ``from_dict`` classmethod. Something you could pass here
             would be a `discord_Embed`_ class.
