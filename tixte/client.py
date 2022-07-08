@@ -252,7 +252,7 @@ class Client(Object):
 
         Returns
         -------
-        :class:`FileResponse`
+        :class:`Upload`
             The response from the upload.
 
         Raises
