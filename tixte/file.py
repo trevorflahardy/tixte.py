@@ -34,6 +34,13 @@ __all__: Tuple[str, ...] = ('File',)
 
 class File(Object):
     r"""An object used to represent a file that can be used to upload an image.
+    
+    Parameters
+    ----------
+    fp: Union[:class:`str`, :class:`bytes`, os.PathLike[:class:`str`], io.BufferedIOBase]
+        A file-like object, or file path, or file-like buffer.
+    filename: Optional[:class:`str`]
+        The filename of the file. If not provided, the filename will be the
 
     Attributes
     -----------
@@ -48,7 +55,14 @@ class File(Object):
         a string then the ``filename`` will default to the string given.
     """
 
-    __slots__: Tuple[str, ...] = ('fp', 'filename', 'spoiler', '_original_pos', '_owner', '_closer')
+    __slots__: Tuple[str, ...] = (
+        'fp',
+        'filename',
+        'spoiler',
+        '_original_pos',
+        '_owner',
+        '_closer',
+    )
 
     def __init__(
         self,
