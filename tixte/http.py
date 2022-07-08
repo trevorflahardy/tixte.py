@@ -20,6 +20,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
+from collections.abc import Sequence
 
 import io
 import sys
@@ -85,6 +86,9 @@ class Route:
 
 
 class ExpandableRoute(Route):
+    """An expanded route that allows for 3rd party urls to be passed to the
+    :meth:`HTTP.request` method.
+    """
 
     __slots__: Tuple[str, ...] = (
         'url',
@@ -112,7 +116,7 @@ class HTTP:
         'dispatch',
     )
 
-    # Dis var taken from d.py :blobsweats:
+    # Credit to:
     # https://github.com/Rapptz/discord.py/blob/master/discord/http.py#L163
     REQUEST_LOG: ClassVar[str] = '{method} {url} with {json} has returned {status}'
 
@@ -150,13 +154,35 @@ class HTTP:
 
         return text
 
-    async def request(self, route: Route, **kwargs: Any) -> Any:
+    async def request(
+        self,
+        route: Route,
+        files: Optional[Sequence[File]] = None,
+        **kwargs: Any,
+    ) -> Any:
         method = route.method
         url = route.url
 
-        kwargs['headers'] = {'Authorization': self.master_key, 'User-Agent': self.user_agent}
+        headers = {'User-Agent': self.user_agent}
 
-        response: Union[aiohttp.ClientResponse, None] = None
+        if not isinstance(route, ExpandableRoute):
+            headers['Authorization'] = self.master_key
+
+        kwargs['headers'] = headers
+
+        if files is not None:
+            data = aiohttp.FormData()
+            for index, file in enumerate(files):
+                data.add_field(
+                    f'file{index}',
+                    file.fp,
+                    filename=file.filename,
+                    content_type='application/octet-stream',
+                )
+
+            kwargs['data'] = data
+
+        response: Optional[aiohttp.ClientResponse] = None
         async with self._session_lock:
             for tries in range(5):
                 async with self._session.request(method, url, **kwargs) as response:
@@ -172,9 +198,16 @@ class HTTP:
                         )
                         log.debug(
                             self.REQUEST_LOG.format(
-                                method=method, url=url, json=fmt_data, status=response.status
+                                method=method,
+                                url=url,
+                                json=fmt_data,
+                                status=response.status,
                             )
                         )
+
+                        if files is not None:
+                            for file in files:
+                                file.close()
 
                         if isinstance(data, dict) and (inner := data.get('data')):
                             return inner
@@ -195,9 +228,18 @@ class HTTP:
                         await asyncio.sleep(retry_after)  # Sleep until no ratelimit :ok_hand:
                         continue
 
-                    if response.status in {500, 502, 504}:  # Taken from d.py yayy
+                    if response.status in {
+                        500,
+                        502,
+                        504,
+                    }:  # Taken from d.py yayy
                         await asyncio.sleep(1 + tries * 2)
                         continue
+
+                    # Anything else here is going to raise, let's close all of the files
+                    if files is not None:
+                        for file in files:
+                            file.close()
 
                     if response.status == 403:
                         raise Forbidden(response, data)
@@ -208,6 +250,11 @@ class HTTP:
                     else:
                         raise HTTPException(response, data)
 
+        # We've run into a problem, let's close all of the files
+        if files is not None:
+            for file in files:
+                file.close()
+
         if response is not None:
             if response.status >= 500:
                 raise TixteServerError(response, data)  # type: ignore # The prereq is that response != None so data is not unbound
@@ -217,13 +264,8 @@ class HTTP:
         raise RuntimeError('Unreachable code in HTTP handling')
 
     def upload_file(self, file: File) -> Response[Dict[Any, Any]]:
-        data = aiohttp.FormData()
-        data.add_field(
-            'file', file.fp, filename=file.filename, content_type='application/octet-stream'
-        )
-
         r = Route('POST', '/upload?domain={domain}', domain=self.domain)
-        return self.request(r, data=data)
+        return self.request(r, files=[file])
 
     def delete_file(self, upload_id: str) -> Response[Dict[Any, Any]]:
         r = Route('DELETE', '/users/@me/uploads/{upload_id}', upload_id=upload_id)
