@@ -48,7 +48,7 @@ class State(Object):
     )
 
     if TYPE_CHECKING:
-        _get_client: Callable[..., Client]
+        _get_client: Callable[[], Client]
 
     def __init__(
         self,
