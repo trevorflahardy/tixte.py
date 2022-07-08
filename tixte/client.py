@@ -22,13 +22,12 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, TypeVar, Coroutine
+from typing_extensions import ParamSpec, Self
 
 from .http import HTTP
 from .state import State
 from .abc import Object
-from .utils import OverwrittenCoroutine
 from .config import Config
 from .upload import Upload, PartialUpload
 
@@ -41,19 +40,24 @@ if TYPE_CHECKING:
 
 __all__: Tuple[str, ...] = ('Client',)
 
+T = TypeVar('T')
+P = ParamSpec('P')
+AnyCoro = Coroutine[Any, Any, T]
+EventCoro = Callable[P, AnyCoro[T]]
+
 
 class Client(Object):
     """
-    The base Client for the wrapper. Every method on the Client class is used to get 
+    The base Client for the wrapper. Every method on the Client class is used to get
     other objects from the API. The client should be used as a context manager to ensure
     the cleanup of the aiohttp session, but it doesn't have to be.
-    
+
     .. code-block:: python3
 
         async with tixte.Client('master_key', 'domain') as client:
             user = await client.fetch_user(user_id)
             print(user)
-    
+
     Parameters
     ----------
     master_key: :class:`str`
@@ -76,7 +80,10 @@ class Client(Object):
         session: Optional[ClientSession] = None,
     ) -> None:
         self._http = HTTP(
-            master_key=master_key, domain=domain, session=session, dispatch=self.dispatch
+            master_key=master_key,
+            domain=domain,
+            session=session,
+            dispatch=self.dispatch,
         )
 
         self._state: State = State(dispatch=self.dispatch, http=self._http)
@@ -100,7 +107,10 @@ class Client(Object):
         method = getattr(self, event_fmt, None)
         if method:
             tasks.append(
-                asyncio.create_task(method(*args, **kwargs), name=f'tixte-dispatcher-{event_fmt}')
+                asyncio.create_task(
+                    method(*args, **kwargs),
+                    name=f'tixte-dispatcher-{event_fmt}',
+                )
             )
 
         callables = self._listeners.get(event_fmt, [])
@@ -111,9 +121,7 @@ class Client(Object):
 
         return tasks
 
-    def event(
-        self, event: Optional[str] = None
-    ) -> Callable[[OverwrittenCoroutine], OverwrittenCoroutine]:
+    def event(self, event: Optional[str] = None) -> Callable[[EventCoro[P, T]], EventCoro[P, T]]:
         """A decorator used to register a coroutine as a listener for an event.
 
         .. code-block:: python3
@@ -128,7 +136,7 @@ class Client(Object):
             The event to listen for. If not provided, the name of the coroutine will be used.
         """
 
-        def wrapped(func: OverwrittenCoroutine) -> OverwrittenCoroutine:
+        def wrapped(func: EventCoro[P, T]) -> EventCoro[P, T]:
             if not asyncio.iscoroutinefunction(func):
                 raise TypeError('event callback must be a coroutine')
 
@@ -143,9 +151,7 @@ class Client(Object):
 
         return wrapped
 
-    def remove_listener(
-        self, event: str, *, callback: Optional[OverwrittenCoroutine] = None
-    ) -> None:
+    def remove_listener(self, event: str, *, callback: Optional[EventCoro[P, T]] = None) -> None:
         """A method to remove a listener from an event.
 
         Parameters
@@ -326,7 +332,7 @@ class Client(Object):
     async def fetch_domains(self) -> List[Domain]:
         """|coro|
 
-        A coroutine to fetch all domains registered with Tixte. Once fetched 
+        A coroutine to fetch all domains registered with Tixte. Once fetched
         once, you can get all of the domains via :attr:`domains`.
 
         Returns
