@@ -85,27 +85,6 @@ class Route:
         self.method: str = method
 
 
-class ExpandableRoute(Route):
-    """An expanded route that allows for 3rd party urls to be passed to the
-    :meth:`HTTP.request` method.
-    """
-
-    __slots__: Tuple[str, ...] = (
-        'url',
-        'method',
-    )
-
-    def __init__(self, method: str, url: str, **parameters: Any) -> None:
-        if parameters:
-            try:
-                url = url.format(**parameters)
-            except IndexError:
-                pass
-
-        self.url: str = url
-        self.method: str = method
-
-
 class HTTP:
     __slots__: Tuple[str, ...] = (
         'session',
@@ -144,13 +123,8 @@ class HTTP:
     async def create_client_session(self) -> None:
         self.session = aiohttp.ClientSession()
 
-    async def _json_or_text(
-        self, response: aiohttp.ClientResponse
-    ) -> Union[Dict[str, Any], str, bytes]:
-        try:
-            text = await response.text()
-        except UnicodeDecodeError:  # This is bytes
-            return await response.read()
+    async def _json_or_text(self, response: aiohttp.ClientResponse) -> Union[Dict[str, Any], str]:
+        text = await response.text(encoding='utf-8')
 
         if response.headers.get('Content-Type') == 'application/json; charset=utf-8':
             return to_json(text)
@@ -164,16 +138,12 @@ class HTTP:
         **kwargs: Any,
     ) -> Any:
         if self.session is None:
-            raise RuntimeError('No session available')
+            self.session = aiohttp.ClientSession()
 
         method = route.method
         url = route.url
 
-        headers = {'User-Agent': self.user_agent}
-
-        if not isinstance(route, ExpandableRoute):
-            headers['Authorization'] = self.master_key
-
+        headers = {'User-Agent': self.user_agent, 'Authorization': self.master_key}
         kwargs['headers'] = headers
 
         if files is not None:
@@ -269,6 +239,20 @@ class HTTP:
 
         raise RuntimeError('Unreachable code in HTTP handling')
 
+    async def get_from_url(self, url: str) -> bytes:
+        if self.session is None:
+            self.session = aiohttp.ClientSession()
+
+        async with self.session.get(url) as response:
+            if response.status == 200:
+                return await response.read()
+            elif response.status == 404:
+                raise NotFound(response, 'asset not found')
+            elif response.status == 403:
+                raise Forbidden(response, 'cannot retrieve asset')
+            else:
+                raise HTTPException(response, 'failed to get asset')
+
     def upload_file(self, file: File) -> Response[Dict[Any, Any]]:
         r = Route('POST', '/upload?domain={domain}', domain=self.domain)
         return self.request(r, files=[file])
@@ -298,7 +282,7 @@ class HTTP:
         return self.request(r)
 
     async def url_to_file(self, *, url: str, filename: str) -> File:
-        data = await self.request(ExpandableRoute('GET', url))
+        data = await self.get_from_url(url)
         bytes_io = io.BytesIO(data)
         bytes_io.seek(0)
         return File(bytes_io, filename=filename)
