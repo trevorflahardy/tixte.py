@@ -68,6 +68,9 @@ async def test_client_file_methods() -> None:
     async with client:
         file = await client.url_to_file(TIXTE_TESTING_URL, filename='testing.png')
         upload = await client.upload_file(file)
+        
+        upload_file = await upload.to_file()
+        assert upload_file.filename == 'testing.png'
 
         assert upload.filename == 'testing'
         assert upload.extension == '.png'
