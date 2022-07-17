@@ -91,17 +91,16 @@ class Client(Object):
 
         self._listeners: Dict[str, List[Callable[..., Any]]] = {}
 
-    # Internal helpers for dispatching
-
     async def __aenter__(self) -> Self:
         if self._http.session is None:
             await self._http.create_client_session()
 
         return self
 
-    async def __aexit__(self, *args: Any) -> Self:
+    async def __aexit__(self, *args: Any) -> None:
         await self.cleanup()
-        return self
+        
+    # Internal helpers for dispatching
 
     def dispatch(self, event: str, *args: Any, **kwargs: Any) -> List[asyncio.Task[Any]]:
         event_fmt = 'on_' + event
