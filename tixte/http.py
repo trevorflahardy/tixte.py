@@ -28,9 +28,11 @@ import aiohttp
 import asyncio
 import logging
 from typing import (
+    TYPE_CHECKING,
     ClassVar,
     Any,
     Coroutine,
+    Literal,
     Optional,
     Dict,
     Tuple,
@@ -41,10 +43,13 @@ from typing import (
 )
 from typing_extensions import TypeAlias
 
-from .errors import Forbidden, NotFound, TixteServerError, HTTPException
+from .errors import *
 from .file import File
 from . import __version__
 from .utils import to_json
+
+if TYPE_CHECKING:
+    from .domain import Domain
 
 __all__: Tuple[str, ...] = ('Route', 'HTTP')
 
@@ -217,6 +222,8 @@ class HTTP:
                         for file in files:
                             file.close()
 
+                    if response.status == 402:
+                        raise PaymentRequired(response, data)
                     if response.status == 403:
                         raise Forbidden(response, data)
                     elif response.status == 404:
@@ -253,13 +260,43 @@ class HTTP:
             else:
                 raise HTTPException(response, 'failed to get asset')
 
-    def upload_file(self, file: File) -> Response[Dict[Any, Any]]:
+    def upload(
+        self, file: File, *, filename: Optional[str] = None, domain: Optional[Domain] = None
+    ) -> Response[Dict[Any, Any]]:
         r = Route('POST', '/upload')
-        return self.request(r, files=[file], params={'domain': self.domain})
 
-    def delete_file(self, upload_id: str) -> Response[Dict[Any, Any]]:
+        params: Dict[str, Any] = {'domain': (domain and domain.url) or self.domain}
+
+        if filename is not None:
+            params['name'] = filename
+
+        return self.request(r, files=[file], params=params)
+
+    def delete_upload(self, upload_id: str) -> Response[Dict[Any, Any]]:
         r = Route('DELETE', '/users/@me/uploads/{upload_id}', upload_id=upload_id)
         return self.request(r)
+
+    def get_upload(self, upload_id: str) -> Response[Dict[Any, Any]]:
+        r = Route('GET', '/users/@me/uploads/{upload_id}', upload_id=upload_id)
+        return self.request(r)
+    
+    def get_upload_permissions(self, upload_id: str) -> Response[Dict[Any, Any]]:
+        r = Route('GET', '/users/@me/uploads/{upload_id}/permissions', upload_id=upload_id)
+        return self.request(r)
+    
+    def add_upload_permissions(self, upload_id: str, permission_level: Literal[1, 2, 3], user_id: str, message: Optional[str] = None,) -> Response[Dict[str, Any]]:
+        r = Route('POST', '/users/@me/uploads/{upload_id}/permissions', upload_id=upload_id)
+        data = {'permission_level': permission_level, 'user': user_id, 'message': message}
+        return self.request(r, data=data)
+    
+    def remove_upload_permissions(self, upload_id: str, user_id: str) -> Response[Dict[str, Any]]:
+        #  {"success":true,"data":{}}
+        r = Route('DELETE', '/users/@me/uploads/{upload_id}/permissions/{user_id}', upload_id=upload_id, user_id=user_id)
+        return self.request(r)
+    
+    def update_upload_permissions(self, upload_id: str, user_id: str, permission_level: Literal[1, 2, 3]) -> Response[Dict[Any, Any]]:
+        r = Route('PATCH', '/users/@me/uploads/{upload_id}/permissions/{user_id}', upload_id=upload_id, user_id=user_id)
+        return self.request(r, data={'permission_level': permission_level})
 
     def get_client_user(self) -> Response[Dict[Any, Any]]:
         r = Route('GET', '/users/@me')
@@ -268,21 +305,149 @@ class HTTP:
     def get_user(self, user_id: str) -> Response[Dict[Any, Any]]:
         r = Route('GET', '/users/{user_id}', user_id=user_id)
         return self.request(r)
+    
+    def search_user(self, query: str, limit: int = 6) -> Response[List[Dict[Any, Any]]]:
+        r = Route('POST', 'users/search')
+        data = {'query': query, 'limit': limit}
+        return self.request(r, data=data)
 
     def get_domains(self) -> Response[Dict[Any, Any]]:
         r = Route('GET', '/users/@me/domains')
+        return self.request(r)
+    
+    def create_domain(self, domain: str, custom: bool = False) -> Response[Dict[Any, Any]]:
+        r = Route('POST', '/users/@me/domains')
+        data = {'domain': domain, 'custom': custom}
+        return self.request(r, data=data)
+
+    def delete_domain(self, domain: str) -> Response[Dict[Any, Any]]:
+        # {"success":true,"data":{"message":"Domain successfully deleted","domain":"foo_bar.tixte.co"}}
+        r = Route('DELETE', '/users/@me/domains/{domain}', domain=domain)
         return self.request(r)
 
     def get_config(self) -> Response[Dict[Any, Any]]:
         r = Route('GET', '/users/@me/config')
         return self.request(r)
+    
+    def get_upload_key(self) -> Response[Dict[str, Any]]:
+        # {"success":true,"data":{"api_key":"17c597d8-ca46-4e03-a18d-7c9cfba8b9c4"}}
+        r = Route('GET', '/users/@me/keys')
+        return self.request(r)
+        
+    def get_subscriptions(self) -> Response[Dict[str, Any]]:
+        r = Route('GET', '/users/@me/billing/subscriptions')
+        return self.request(r)
+    
+    def get_payment_methods(self) -> Response[Dict[str, Any]]:
+        r = Route('GET', '/users/@me/billing/payment-methods')
+        return self.request(r)
+    
+    def get_transactions(self) -> Response[Dict[str, Any]]:
+        r = Route('GET', '/users/@me/billing/transactions')
+        return self.request(r)
+    
+    def get_developer_applications(self) -> Response[Dict[str, Any]]:
+        r = Route('GET', '/users/@me/developer/applications')
+        return self.request(r)
+    
+    def get_settings(self) -> Response[Dict[str, Any]]:
+        r = Route('GET', '/users/@me/settings')
+        return self.request(r)
+
+    def update_settings(
+        self,
+        *,
+        new_login: Optional[bool] = None,
+        promotional: Optional[bool] = None,
+        shared_file: Optional[bool] = None,
+        addable: Optional[bool] = None,
+        shareable: Optional[int] = None, 
+    ) -> Response[Dict[str, Any]]:
+        emails: Dict[str, Any] = {}
+        
+        if new_login is not None:
+            emails['new_login'] = new_login
+        
+        if promotional is not None:
+            emails['promotional'] = promotional
+        
+        if shared_file is not None:
+            emails['shared_file'] = shared_file
+        
+        privacy: Dict[str, Any] = {}
+        
+        if addable is not None:
+            privacy['addable'] = addable
+        
+        if shareable is not None:
+            privacy['shareable'] = shareable
+        
+        data: Dict[str, Any] = {}
+        
+        if emails:
+            data['emails'] = emails
+        
+        if privacy:
+            data['privacy'] = privacy
+        
+        r = Route('PATCH', '/users/@me/settings')
+        return self.request(r, data=data)        
+    
+    def request_data(self) -> Response[Dict[str, Any]]:
+        r = Route('POST', '/users/@me/data-requests')
+        return self.request(r)
+     
+    def update_config(
+        self,
+        *,
+        author_name: Optional[str] = None,
+        author_url: Optional[str] = None,
+        description: Optional[str] = None,
+        provider_name: Optional[str] = None,
+        provider_url: Optional[str] = None,
+        theme_color: Optional[str] = None,
+        title: Optional[str] = None,
+        custom_css: Optional[str] = None
+    ) -> Response[Dict[Any, Any]]:
+        embed: Dict[str, str] = {}
+        
+        if author_name is not None:
+            embed['author_name'] = author_name
+        
+        if author_url is not None:
+            embed['author_url'] = author_url
+        
+        if description is not None:
+            embed['description'] = description
+        
+        if provider_name is not None:
+            embed['provider_name'] = provider_name
+        
+        if provider_url is not None:
+            embed['provider_url'] = provider_url
+        
+        if theme_color is not None:
+            embed['theme_color'] = theme_color
+        
+        if title is not None:
+            embed['title'] = title
+        
+        data: Dict[str, Any] = {}
+        
+        if embed:
+            data['embed'] = embed
+            
+        if custom_css is not None:
+            data['custom_css'] = custom_css
+        
+        r = Route('PATCH', '/users/@me/config')
+        return self.request(r, data=data)
 
     def get_total_upload_size(self) -> Response[Dict[Any, Any]]:
         r = Route('GET', '/users/@me/uploads/size')
         return self.request(r)
-
+    
     async def url_to_file(self, *, url: str, filename: str) -> File:
         data = await self.get_from_url(url)
         bytes_io = io.BytesIO(data)
-        bytes_io.seek(0)
         return File(bytes_io, filename=filename)
