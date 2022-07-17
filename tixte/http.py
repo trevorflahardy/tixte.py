@@ -254,8 +254,8 @@ class HTTP:
                 raise HTTPException(response, 'failed to get asset')
 
     def upload_file(self, file: File) -> Response[Dict[Any, Any]]:
-        r = Route('POST', '/upload?domain={domain}', domain=self.domain)
-        return self.request(r, files=[file])
+        r = Route('POST', '/upload')
+        return self.request(r, files=[file], params={'domain': self.domain})
 
     def delete_file(self, upload_id: str) -> Response[Dict[Any, Any]]:
         r = Route('DELETE', '/users/@me/uploads/{upload_id}', upload_id=upload_id)
