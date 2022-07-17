@@ -34,10 +34,10 @@ __all__: Tuple[str, ...] = ('File',)
 
 class File(Object):
     r"""An object used to represent a file that can be used to upload an image.
-    
+
     Parameters
     ----------
-    fp: Union[:class:`str`, :class:`bytes`, os.PathLike[:class:`str`], io.BufferedIOBase]
+    fp: Union[:class:`os.PathLike`, :class:`io.BufferedIOBase`]
         A file-like object, or file path, or file-like buffer.
     filename: Optional[:class:`str`]
         The filename of the file. If not provided, the filename will be the
