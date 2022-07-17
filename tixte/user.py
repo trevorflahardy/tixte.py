@@ -55,7 +55,7 @@ class User(IDable):
         .. describe:: str(x)
 
             Returns the username of the user.
-            
+
         .. describe:: x == y
 
             Deteremines if two Users are equal.
@@ -139,7 +139,7 @@ class ClientUser(User):
     such as their email address and phone number.
 
     This inherits from :class:`User`.
-    
+
     .. container:: operations
 
         .. describe:: repr(x)
@@ -149,7 +149,7 @@ class ClientUser(User):
         .. describe:: str(x)
 
             Returns the username of the ClientUser.
-            
+
         .. describe:: x == y
 
             Deteremines if two ClientUsers are equal.
