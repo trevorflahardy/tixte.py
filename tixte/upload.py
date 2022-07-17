@@ -87,6 +87,26 @@ class PartialUpload(IDable):
         """
         data = await self._state.http.delete_upload(self.id)
         return DeleteResponse(state=self._state, data=data)
+    
+    async def fetch(self) -> Upload:
+        """|coro|
+        
+        Fetch the upload and return it.
+        
+        Returns
+        -------
+        :class:`Upload`
+            The upload that was requested.
+
+        Raises
+        ------
+        Forbidden
+            You do not have permission to fetch this upload.
+        HTTPException
+            An HTTP exception has occurred.
+        """
+        data = await self._state.http.get_upload(self.id)
+        return Upload(state=self._state, data=data)
 
 
 class Upload(PartialUpload):
