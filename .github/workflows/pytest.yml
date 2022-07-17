@@ -1,4 +1,4 @@
-name: Pychecking
+name: pytest
 
 on: 
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   pytest:
-    name: Pytest
+    name: pytest
     runs-on: ubuntu-latest
 
     steps:
