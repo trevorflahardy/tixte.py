@@ -48,6 +48,22 @@ class Config(Object):
 
             Returns a string representation of the config object.
 
+        .. describe:: x == y
+
+            Returns True if the config objects are equal. Please note this comparison
+            is evaluated by comparing the custom_css, hide_branding, and base_redirect
+            attributes.
+
+        .. describe:: x != y
+
+            Returns True if the config objects are not equal. Please note this comparison
+            is evaluated by comparing the custom_css, hide_branding, and base_redirect
+            attributes.
+
+        .. describe:: hash(x)
+
+            Returns the hash of the config object.
+
     Attributes
     ----------
     custom_css: :class:`str`
@@ -79,8 +95,23 @@ class Config(Object):
             self
         )
 
-    @property
-    def embed(self) -> Dict[str, Any]:
+    def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, self.__class__):
+            return False
+
+        return (
+            self.custom_css == __o.custom_css
+            and self.hide_branding == __o.hide_branding
+            and self.base_redirect == __o.base_redirect
+        )
+
+    def __ne__(self, __o: object) -> bool:
+        return not self.__eq__(__o)
+
+    def __hash__(self) -> int:
+        return hash((self.custom_css, self.hide_branding, self.base_redirect))
+
+    def to_dict(self) -> Dict[str, Any]:
         """Dict[:class:`str`, Any]: Returns a formatted dictionary representing your embed from the embed editor."""
         embed = self._embed
 
@@ -104,7 +135,7 @@ class Config(Object):
 
         Parameters
         ----------
-        embed_cls: EmbedProtocol
+        embed_cls: Type[Any]
             The embed class you want to use. Must implement
             a ``from_dict`` classmethod. Something you could pass here
             would be a `discord_Embed`_ class.
@@ -117,4 +148,4 @@ class Config(Object):
         Any
             An instance of your embed class.
         """
-        return embed_cls.from_dict(self.embed)
+        return embed_cls.from_dict(self.to_dict())
