@@ -33,6 +33,7 @@ from typing import (
 from .file import File
 from .abc import IDable
 from .utils import parse_time
+from .enums import Premium
 
 if TYPE_CHECKING:
     from .state import State
@@ -74,14 +75,6 @@ class User(IDable):
         The ID of the user.
     username: :class:`str`
         The username of the user.
-    pro: :class:`bool`
-        Whether the user is a pro.
-    beta: :class:`bool`
-        Whether or not the user is in the beta.
-    admin: :class:`bool`
-        Whether or not the user is an admin.
-    staff: :class:`bool`
-        Whether or not the user is staff.
     avatar: Optional[:class:`str`]
         The user's avatar, if any.
     """
@@ -103,10 +96,6 @@ class User(IDable):
         self.id: str = data['id']
         self.username: str = data['username']
         self.avatar: Optional[str] = data['avatar']
-        self.beta: Optional[bool] = data.get('beta')
-        self.admin: Optional[bool] = data.get('admin', None)
-        self.staff: Optional[bool] = data.get('staff')
-        self.pro: Optional[bool] = data.get('pro')
 
     def __str__(self) -> str:
         return self.username
@@ -174,6 +163,8 @@ class ClientUser(User):
         The phone, if any, linked to the user account.
     upload_region: :class:`str`
         The user's upload region.
+    premium: :class:`Premium`
+        Your current premium status.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -183,12 +174,14 @@ class ClientUser(User):
         'phone',
         'upload_region',
         '_last_login',
+        'premium_tier',
     )
 
     def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
         super().__init__(state=state, data=data)
 
         self.mfa_enabled: bool = data['mfa_enabled']
+        self.premium_tier: Premium = Premium(data['premium_tier'])
         self.email: str = data['email']
         self.email_verified: bool = data['email_verified']
         self.phone: Optional[Any] = data['phone']
