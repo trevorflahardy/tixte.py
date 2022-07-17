@@ -59,7 +59,7 @@ async def test_client_url_to_file() -> None:
     async with client:
         file = await client.url_to_file(TIXTE_TESTING_URL, filename='testing.png')
 
-    assert file.filename == 'testing.png'
+        assert file.filename == 'testing.png'
 
 
 @pytest.mark.asyncio
