@@ -17,10 +17,10 @@ class DiscordBot(commands.Bot):
         self.session = aiohttp.ClientSession()
         self.tixte = tixte.Client('your-master-token', 'your-domain', session=self.session)
 
-    async def upload_file(self, file: Union[tixte.File, discord.File]) -> tixte.Upload:
-        return await self.tixte.upload_file(file)
+    async def upload(self, file: Union[tixte.File, discord.File]) -> tixte.Upload:
+        return await self.tixte.upload(file)
 
-    async def delete_file(self, id: str) -> None:
+    async def delete_upload(self, id: str) -> None:
         partial = self.tixte.get_partial_upload(id)
         await partial.delete()
 
