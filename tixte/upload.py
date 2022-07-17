@@ -21,13 +21,17 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
 from .abc import IDable, Object
+from .utils import parse_time
 
 if TYPE_CHECKING:
+    import datetime
+
     from .state import State
     from .file import File
+    from .domain import Domain
 
 __all__: Tuple[str, ...] = ('PartialUpload', 'Upload', 'DeleteResponse')
 
@@ -81,7 +85,7 @@ class PartialUpload(IDable):
         :class:`DeleteResponse`
             The response from Tixte with the status of the deletion.
         """
-        data = await self._state.http.delete_file(self.id)
+        data = await self._state.http.delete_upload(self.id)
         return DeleteResponse(state=self._state, data=data)
 
 
@@ -112,8 +116,10 @@ class Upload(PartialUpload):
     ----------
     id: :class:`str`
         The ID of the file.
+    name: :class:`str`
+        The name of the file.
     filename: :class:`str`
-        The filename of the file.
+        The filename of the file. This is the combined name and extension of the file.
     extension: :class:`str`
         The file extension. For example ``.png`` or ``.jpg``.
     url: :class:`str`
@@ -125,16 +131,29 @@ class Upload(PartialUpload):
     __slots__: Tuple[str, ...] = (
         '_state',
         'id',
+        'name',
         'filename',
         'extension',
         'url',
         'direct_url',
+        'domain_url',
+        'region',
+        'expiration',
     )
 
     def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
         self._state: State = state
 
         self.id: str = data['id']
+        self.name: str = data['name']
+        # self.region: str = data['region']
+        # self.expiration: Optional[str] = data['expiration']
+        # self.permissions: List[Dict[str, Any]] = data['permissions']
+        self.domain_url: str = data['domain']
+
+        self.expiration: Optional[datetime.datetime] = (
+            expiration := data['expiration']
+        ) and parse_time(expiration)
         self.filename: str = data['filename']
         self.extension: str = data['extension']
         self.url: str = data['url']
@@ -144,6 +163,10 @@ class Upload(PartialUpload):
         return '<Upload id={0.id!r} filename={0.filename!r} extension={0.extension!r} url={0.url!r} direct_url={0.direct_url!r}>'.format(
             self
         )
+
+    @property
+    def domain(self) -> Optional[Domain]:
+        return self._state.get_domain(self.domain_url)
 
     async def to_file(self) -> File:
         """|coro|
