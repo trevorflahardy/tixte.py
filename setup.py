@@ -19,7 +19,6 @@ extras_require = {
         'sphinxcontrib_trio==1.1.2',
         'sphinxcontrib-websupport',
         'typing-extensions',
-        'python-docs-theme',
     ],
     'test': ['pytest', 'pytest-asyncio', 'pytest-cov'],
 }
