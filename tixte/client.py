@@ -245,7 +245,7 @@ class Client(Object):
         data = await self._http.get_user(id)
         return self._state.store_user(data)
 
-    async def upload_file(self, file: File, /) -> Upload:
+    async def upload(self, file: File, /, *, domain: Optional[Domain] = None) -> Upload:
         """|coro|
 
         A coroutine used to upload a file to Tixte.
@@ -254,6 +254,8 @@ class Client(Object):
         ----------
         file: :class:`File`
             The file to upload. Please note `discord.py's file objects <https://discordpy.readthedocs.io/en/latest/api.html?highlight=file#discord.File>`_ as well.
+        domain: Optional[:class:`Domain`]
+            Optionally, upload to a different domain than the client's default.
 
         Returns
         -------
@@ -265,9 +267,9 @@ class Client(Object):
         Forbidden
             You do not have permission to upload this file.
         HTTPException
-            An HTTP error occurred.
+            An HTTP exception has occurred.
         """
-        data = await self._http.upload_file(file)
+        data = await self._http.upload(file, filename=file.filename, domain=domain)
         return Upload(state=self._state, data=data)
 
     async def url_to_file(self, url: str, /, *, filename: Optional[str] = None) -> File:
@@ -365,3 +367,28 @@ class Client(Object):
         """
         data = await self._http.get_config()
         return Config(state=self._state, data=data)
+
+    async def fetch_upload(self, upload_id: str, /) -> Upload:
+        """|coro|
+        
+        Fetch an upload from its ID.
+        
+        Parameters
+        ----------
+        upload_id: :class:`str`
+            The ID of the upload to fetch.
+        
+        Returns
+        -------
+        :class:`Upload`
+            The upload that was requested.
+            
+        Raises
+        ------
+        Forbidden
+            You do not have permission to fetch this upload.
+        HTTPException
+            An HTTP exception has occurred.
+        """
+        data = await self._http.get_upload(upload_id)
+        return Upload(state=self._state, data=data)
