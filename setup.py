@@ -21,6 +21,7 @@ extras_require = {
         'typing-extensions',
         'python-docs-theme',
     ],
+    'test': ['pytest', 'pytest-asyncio', 'pytest-cov'],
 }
 
 setup(
