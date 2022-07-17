@@ -105,7 +105,7 @@ async def test_client_configuration() -> None:
     async with client:
         config = await client.fetch_config()
 
-    assert config.to_dict == {
+    assert config.to_dict() == {
         'title': None,
         'description': None,
         'author': {'name': None, 'url': None},
