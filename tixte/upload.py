@@ -27,6 +27,7 @@ from .abc import IDable, Object
 
 if TYPE_CHECKING:
     from .state import State
+    from .file import File
 
 __all__: Tuple[str, ...] = ('PartialUpload', 'Upload', 'DeleteResponse')
 
@@ -42,7 +43,7 @@ class PartialUpload(IDable):
         .. describe:: repr(x)
 
             Returns a string representation of the partial upload.
-            
+
         .. describe:: x == y
 
             Deteremines if two partial uploads are equal.
@@ -88,13 +89,13 @@ class Upload(PartialUpload):
     """The class that represents the response from Tixte when uploading a file.
 
     This inherits :class:`PartialUpload`.
-    
+
     .. container:: operations
 
         .. describe:: repr(x)
 
             Returns a string representation of the upload.
-            
+
         .. describe:: x == y
 
             Deteremines if two uploads are equal.
@@ -143,6 +144,18 @@ class Upload(PartialUpload):
         return '<Upload id={0.id!r} filename={0.filename!r} extension={0.extension!r} url={0.url!r} direct_url={0.direct_url!r}>'.format(
             self
         )
+
+    async def to_file(self) -> File:
+        """|coro|
+
+        A coroutine to turn this :class:`Upload` to a :class:`File` object.
+
+        Returns
+        -------
+        :class:`File`
+            The file object created from downloading this upload's image.
+        """
+        return await self._state.http.url_to_file(url=self.url, filename=self.filename)
 
 
 class DeleteResponse(Object):
