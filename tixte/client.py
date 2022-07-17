@@ -99,7 +99,7 @@ class Client(Object):
 
     async def __aexit__(self, *args: Any) -> None:
         await self.cleanup()
-        
+
     # Internal helpers for dispatching
 
     def dispatch(self, event: str, *args: Any, **kwargs: Any) -> List[asyncio.Task[Any]]:
@@ -200,7 +200,7 @@ class Client(Object):
         """
         if not self._http.session:
             raise ValueError('No session to cleanup')
-        
+
         await self._http.session.close()
 
     def get_user(self, id: str, /) -> Optional[User]:
