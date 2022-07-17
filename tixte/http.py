@@ -261,11 +261,11 @@ class HTTP:
                 raise HTTPException(response, 'failed to get asset')
 
     def upload(
-        self, file: File, *, filename: Optional[str] = None, domain: Optional[Domain] = None
+        self, file: File, *, filename: Optional[str] = None, domain: Optional[Union[Domain, str]] = None
     ) -> Response[Dict[Any, Any]]:
         r = Route('POST', '/upload')
 
-        params: Dict[str, Any] = {'domain': (domain and domain.url) or self.domain}
+        params: Dict[str, Any] = {'domain': (domain and str(domain)) or self.domain}
 
         if filename is not None:
             params['name'] = filename

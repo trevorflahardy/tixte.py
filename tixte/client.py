@@ -22,7 +22,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, TypeVar, Coroutine
+from typing import TYPE_CHECKING, Union, Any, Callable, Dict, List, Optional, Tuple, TypeVar, Coroutine
 from typing_extensions import ParamSpec, Self
 
 from .http import HTTP
@@ -245,7 +245,7 @@ class Client(Object):
         data = await self._http.get_user(id)
         return self._state.store_user(data)
 
-    async def upload(self, file: File, /, *, domain: Optional[Domain] = None) -> Upload:
+    async def upload(self, file: File, /, *, domain: Optional[Union[Domain, str]] = None) -> Upload:
         """|coro|
 
         A coroutine used to upload a file to Tixte.
@@ -254,7 +254,7 @@ class Client(Object):
         ----------
         file: :class:`File`
             The file to upload. Please note `discord.py's file objects <https://discordpy.readthedocs.io/en/latest/api.html?highlight=file#discord.File>`_ as well.
-        domain: Optional[:class:`Domain`]
+        domain: Optional[Union[:class:`Domain`, :class:`str`]]
             Optionally, upload to a different domain than the client's default.
 
         Returns

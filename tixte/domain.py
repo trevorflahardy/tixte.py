@@ -85,6 +85,9 @@ class Domain(Object):
 
     def __hash__(self) -> int:
         return hash((self.url, self.uploads, self.owner_id))
+    
+    def __str__(self) -> str:
+        return self.url
 
     @property
     def owner(self) -> Optional[User]:
