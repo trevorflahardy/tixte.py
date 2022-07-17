@@ -108,11 +108,11 @@ class ExpandableRoute(Route):
 
 class HTTP:
     __slots__: Tuple[str, ...] = (
-        '_session',
+        'session',
         'master_key',
         'domain',
         'user_agent',
-        '_session_lock',
+        'session_lock',
         'dispatch',
     )
 
@@ -133,13 +133,16 @@ class HTTP:
 
         self.dispatch: Callable[..., List[asyncio.Task[Any]]] = dispatch
 
-        self._session: aiohttp.ClientSession = session or aiohttp.ClientSession()
-        self._session_lock: asyncio.Lock = asyncio.Lock()
+        self.session: Optional[aiohttp.ClientSession] = session
+        self.session_lock: asyncio.Lock = asyncio.Lock()
 
         user_agent = (
             'TixteClient (https://github.com/NextChai/Tixte {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         )
         self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
+
+    async def create_client_session(self) -> None:
+        self.session = aiohttp.ClientSession()
 
     async def _json_or_text(
         self, response: aiohttp.ClientResponse
@@ -160,6 +163,9 @@ class HTTP:
         files: Optional[Sequence[File]] = None,
         **kwargs: Any,
     ) -> Any:
+        if self.session is None:
+            raise RuntimeError('No session available')
+
         method = route.method
         url = route.url
 
@@ -183,9 +189,9 @@ class HTTP:
             kwargs['data'] = data
 
         response: Optional[aiohttp.ClientResponse] = None
-        async with self._session_lock:
+        async with self.session_lock:
             for tries in range(5):
-                async with self._session.request(method, url, **kwargs) as response:
+                async with self.session.request(method, url, **kwargs) as response:
                     self.dispatch('request', response)
 
                     data = await self._json_or_text(response)
