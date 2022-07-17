@@ -112,10 +112,12 @@ class TixteServerError(HTTPException):
 
     __slots__: Tuple[str, ...] = ()
 
+
 class PaymentRequired(HTTPException):
     """An exception raised when you attempt to perform an operation
     on your account with the wrong payment tier.
-    
+
     This inherits from :class:`HTTPException`.
     """
+
     __slots__: Tuple[str, ...] = ()

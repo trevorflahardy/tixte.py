@@ -370,19 +370,19 @@ class Client(Object):
 
     async def fetch_upload(self, upload_id: str, /) -> Upload:
         """|coro|
-        
+
         Fetch an upload from its ID.
-        
+
         Parameters
         ----------
         upload_id: :class:`str`
             The ID of the upload to fetch.
-        
+
         Returns
         -------
         :class:`Upload`
             The upload that was requested.
-            
+
         Raises
         ------
         Forbidden
