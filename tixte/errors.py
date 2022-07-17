@@ -34,6 +34,7 @@ __all__: Tuple[str, ...] = (
     'NotFound',
     'Forbidden',
     'TixteServerError',
+    'PaymentRequired',
 )
 
 
@@ -86,7 +87,8 @@ class HTTPException(TixteException):
 class NotFound(HTTPException):
     """An exception raised when an object is not Found.
 
-    This inherits from :class:`HTTPException`."""
+    This inherits from :class:`HTTPException`.
+    """
 
     __slots__: Tuple[str, ...] = ()
 
@@ -95,7 +97,8 @@ class Forbidden(HTTPException):
     """An exception raised when the user does not have permission
     to perform an action.
 
-    This inherits from :class:`HTTPException`."""
+    This inherits from :class:`HTTPException`.
+    """
 
     __slots__: Tuple[str, ...] = ()
 
@@ -104,6 +107,15 @@ class TixteServerError(HTTPException):
     """An exception raised when an internal Tixte server error
     occurs from the API.
 
-    This inherits from :class:`HTTPException`."""
+    This inherits from :class:`HTTPException`.
+    """
 
+    __slots__: Tuple[str, ...] = ()
+
+class PaymentRequired(HTTPException):
+    """An exception raised when you attempt to perform an operation
+    on your account with the wrong payment tier.
+    
+    This inherits from :class:`HTTPException`.
+    """
     __slots__: Tuple[str, ...] = ()
