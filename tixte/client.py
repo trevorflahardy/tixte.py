@@ -32,7 +32,7 @@ from .config import Config
 from .upload import Upload, PartialUpload
 
 if TYPE_CHECKING:
-    from aiohttp import ClientSession
+    import aiohttp
 
     from .user import User, ClientUser
     from .file import File
@@ -77,7 +77,7 @@ class Client(Object):
         domain: str,
         /,
         *,
-        session: Optional[ClientSession] = None,
+        session: Optional[aiohttp.ClientSession] = None,
     ) -> None:
         self._http = HTTP(
             master_key=master_key,
@@ -94,6 +94,9 @@ class Client(Object):
     # Internal helpers for dispatching
 
     async def __aenter__(self) -> Self:
+        if self._http.session is None:
+            await self._http.create_client_session()
+
         return self
 
     async def __aexit__(self, *args: Any) -> Self:
@@ -196,7 +199,10 @@ class Client(Object):
 
         A helper coroutine used to cleanup the client's HTTP session.
         """
-        await self._http._session.close()  # type: ignore
+        if not self._http.session:
+            raise ValueError('No session to cleanup')
+        
+        await self._http.session.close()
 
     def get_user(self, id: str, /) -> Optional[User]:
         """Used to get a user from the internal cache of users.
@@ -248,7 +254,7 @@ class Client(Object):
         Parameters
         ----------
         file: :class:`File`
-            The file to upload. Please note ``discord.py``'s file objects work as well.
+            The file to upload. Please note `discord.py's file objects <https://discordpy.readthedocs.io/en/latest/api.html?highlight=file#discord.File>`_ as well.
 
         Returns
         -------
@@ -319,7 +325,7 @@ class Client(Object):
 
         Parameters
         ----------
-        name: :class:`str`
+        url: :class:`str`
             The url of the domain to get.
 
         Returns
