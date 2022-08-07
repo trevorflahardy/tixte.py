@@ -22,18 +22,18 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import enum
+from typing import TYPE_CHECKING, Any
 
-import enum_tools.documentation
+if TYPE_CHECKING:
+    enum_tools: Any
 
 
-@enum_tools.documentation.document_enum
 class Region(enum.Enum):
     """Represents an upload region."""
 
     us_east_one = 'us-east-1'  # doc: Represents the US East region.
 
 
-@enum_tools.documentation.document_enum
 class Premium(enum.Enum):
     """Represents the premium tiers of Tixte."""
 
@@ -44,7 +44,6 @@ class Premium(enum.Enum):
     )
 
 
-@enum_tools.documentation.document_enum
 class UploadPermissionLevel(enum.Enum):
     """Represents an upload permission level. This level determines
     which members can view an upload.
@@ -53,3 +52,12 @@ class UploadPermissionLevel(enum.Enum):
     viewer = 1  # doc: A viewer of this upload.
     manager = 2  # doc: A manager of this upload. Can manage viewers.
     owner = 3  # doc: The owner of this upload. Can manage everything.
+
+
+try:
+    import enum_tools.documentation  # pyright: ignore[reportMissingImports]
+    enum_tools.documentation.document_enum(Region)
+    enum_tools.documentation.document_enum(Premium)
+    enum_tools.documentation.document_enum(UploadPermissionLevel)
+except ImportError:
+    pass
