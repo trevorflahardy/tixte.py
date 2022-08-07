@@ -34,7 +34,7 @@ class Premium(enum.Enum):
     turbo_charged = 2
 
 
-class UploadPermissions(enum.Enum):
+class UploadPermissionLevel(enum.Enum):
     viewer = 1
     manager = 2
     owner = 3
