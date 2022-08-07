@@ -23,8 +23,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
-from .abc import IDable, Object
+from .abc import IDable
 from .utils import parse_time
+from .enums import UploadPermissionLevel, Region
+from .delete import DeleteResponse
+from .permissions import Permissions
 
 if TYPE_CHECKING:
     import datetime
@@ -33,7 +36,7 @@ if TYPE_CHECKING:
     from .file import File
     from .domain import Domain
 
-__all__: Tuple[str, ...] = ('PartialUpload', 'Upload', 'DeleteResponse')
+__all__: Tuple[str, ...] = ('PartialUpload', 'Upload')
 
 
 class PartialUpload(IDable):
@@ -66,11 +69,12 @@ class PartialUpload(IDable):
         The ID of the partial upload.
     """
 
-    __slots__: Tuple[str, ...] = ('_state', 'id')
+    __slots__: Tuple[str, ...] = ('_state', 'id', 'permissions')
 
     def __init__(self, *, state: State, id: str) -> None:
         self._state: State = state
         self.id: str = id
+        self.permissions: Permissions = Permissions(state=self._state, upload=self)
 
     def __repr__(self) -> str:
         return '<PartialUpload id={0.id}>'.format(self)
@@ -87,12 +91,12 @@ class PartialUpload(IDable):
         """
         data = await self._state.http.delete_upload(self.id)
         return DeleteResponse(state=self._state, data=data)
-    
+
     async def fetch(self) -> Upload:
         """|coro|
-        
+
         Fetch the upload and return it.
-        
+
         Returns
         -------
         :class:`Upload`
@@ -146,6 +150,8 @@ class Upload(PartialUpload):
         The URL for the newly uploaded image.
     direct_url: :class:`str`
         The Direct URL for the newly uploaded image.
+    permissions: Dict[:class:`User`, :class:`UploadPermissionLevel`]
+        A mapping of users to their permission levels.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -159,33 +165,43 @@ class Upload(PartialUpload):
         'domain_url',
         'region',
         'expiration',
+        'permissions',
+        'size',
+        'mimetype',
+        'permission_level',
     )
 
     def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
         self._state: State = state
 
-        self.id: str = data['id']
+        self.id: str = data['asset_id']
         self.name: str = data['name']
-        # self.region: str = data['region']
-        # self.expiration: Optional[str] = data['expiration']
-        # self.permissions: List[Dict[str, Any]] = data['permissions']
+        self.region: Optional[Region] = Region(region) if (region := data.get('region')) else None
+        self.permissions: Permissions = Permissions(
+            state=self._state, upload=self, permission_mapping=data.get('permissions', None)
+        )
         self.domain_url: str = data['domain']
+        self.size: int = data['size']
+        self.mimetype: str = data['mimetype']
 
         self.expiration: Optional[datetime.datetime] = (
             expiration := data['expiration']
         ) and parse_time(expiration)
-        self.filename: str = data['filename']
         self.extension: str = data['extension']
-        self.url: str = data['url']
-        self.direct_url: str = data['direct_url']
+        self.url: str = data.get('url') or f'https://{self.domain_url}/{self.name}.{self.extension}'
+        self.direct_url: Optional[str] = data.get('direct_url')
+        self.permission_level: UploadPermissionLevel = UploadPermissionLevel(
+            data['permission_level']
+        )
 
     def __repr__(self) -> str:
-        return '<Upload id={0.id!r} filename={0.filename!r} extension={0.extension!r} url={0.url!r} direct_url={0.direct_url!r}>'.format(
+        return '<Upload id={0.id!r} filename={0.name!r} extension={0.extension!r} url={0.url!r} direct_url={0.direct_url!r}>'.format(
             self
         )
 
     @property
     def domain(self) -> Optional[Domain]:
+        """Optional[:class:`Domain`]: The domain that the upload is located in."""
         return self._state.get_domain(self.domain_url)
 
     async def to_file(self) -> File:
@@ -200,24 +216,27 @@ class Upload(PartialUpload):
         """
         return await self._state.http.url_to_file(url=self.url, filename=self.filename)
 
+    async def fetch_domain(self) -> Domain:
+        """|coro|
 
-class DeleteResponse(Object):
-    """Represents the response from Tixte when deleting a file.
+        A method used to fetch the domain this upload is registered under. Consider using :attr:`domain`
+        first before calling this.
 
-    Attributes
-    ----------
-    message: :class:`str`
-        The message from Tixte with the status of the deletion.
-    """
+        Returns
+        --------
+        :class:`Domain`
+            The domain that this upload is registered under.
 
-    __slots__: Tuple[str, ...] = (
-        '_state',
-        'message',
-    )
+        Raises
+        ------
+        Forbidden
+            You do not have permission to fetch this domain.
+        HTTPException
+            An HTTP exception has occurred.
+        """
+        domains = await self._state.http.get_domains()
+        for domain in domains:
+            if domain.url == self.domain_url:
+                return domain
 
-    def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
-        self._state: State = state
-        self.message: str = data['message']
-
-    def __repr__(self) -> str:
-        return '<DeleteResponse message={0.message!r}>'.format(self)
+        raise RuntimeError(f'Domain {self.domain_url} not found.')
