@@ -1,5 +1,6 @@
-import tixte
 import asyncio
+
+import tixte
 
 
 async def main():

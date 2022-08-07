@@ -22,33 +22,23 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
-from typing import (
-    TYPE_CHECKING,
-    Union,
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    TypeVar,
-    Coroutine,
-)
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Optional, Tuple, TypeVar, Union
+
 from typing_extensions import ParamSpec, Self
 
-from .http import HTTP
-from .state import State
 from .abc import Object
 from .config import Config
-from .upload import Upload, PartialUpload
 from .errors import NotFound
+from .http import HTTP
+from .state import State
+from .upload import PartialUpload, Upload
 
 if TYPE_CHECKING:
     import aiohttp
 
-    from .user import User, ClientUser
-    from .file import File
     from .domain import Domain
+    from .file import File
+    from .user import ClientUser, User
 
 __all__: Tuple[str, ...] = ('Client',)
 

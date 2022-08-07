@@ -24,14 +24,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
 
 from .abc import Object
-from .user import User, ClientUser
 from .domain import Domain
+from .user import ClientUser, User
 
 if TYPE_CHECKING:
     from asyncio import Task
 
-    from .http import HTTP
     from .client import Client
+    from .http import HTTP
 
 __all__: Tuple[str, ...] = ('State',)
 

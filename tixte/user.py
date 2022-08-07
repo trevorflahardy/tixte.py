@@ -22,18 +22,12 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    Optional,
-    Tuple,
-)
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
-from .file import File
 from .abc import IDable
-from .utils import parse_time
 from .enums import Premium, Region
+from .file import File
+from .utils import parse_time
 
 if TYPE_CHECKING:
     from .state import State

@@ -24,17 +24,17 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
 from .abc import IDable
-from .utils import parse_time
-from .enums import UploadPermissionLevel, Region
 from .delete import DeleteResponse
+from .enums import Region, UploadPermissionLevel
 from .permissions import Permissions
+from .utils import parse_time
 
 if TYPE_CHECKING:
     import datetime
 
-    from .state import State
-    from .file import File
     from .domain import Domain
+    from .file import File
+    from .state import State
 
 __all__: Tuple[str, ...] = ('PartialUpload', 'Upload')
 

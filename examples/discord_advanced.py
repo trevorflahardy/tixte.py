@@ -1,10 +1,10 @@
 from typing import Union
 
-import tixte
 import aiohttp
-
 import discord
 from discord.ext import commands
+
+import tixte
 
 
 class DiscordBot(commands.Bot):

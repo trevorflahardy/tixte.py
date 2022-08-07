@@ -21,31 +21,32 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-import io
-import sys
-import aiohttp
 import asyncio
+import io
 import logging
+import sys
 from typing import (
     TYPE_CHECKING,
-    ClassVar,
     Any,
+    Callable,
+    ClassVar,
     Coroutine,
+    Dict,
+    List,
     Literal,
     Optional,
-    Dict,
-    Tuple,
-    Union,
-    TypeVar,
-    Callable,
-    List,
     Sequence,
+    Tuple,
+    TypeVar,
+    Union,
 )
+
+import aiohttp
 from typing_extensions import TypeAlias
 
+from . import __version__
 from .errors import *
 from .file import File
-from . import __version__
 from .utils import to_json
 
 if TYPE_CHECKING:

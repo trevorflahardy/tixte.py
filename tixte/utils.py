@@ -24,7 +24,7 @@ SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Any, Dict, Tuple, TypeVar, Callable
+from typing import Any, Callable, Dict, Tuple, TypeVar
 
 T = TypeVar('T')
 

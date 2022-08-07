@@ -22,12 +22,11 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-import os
 import io
+import os
 from typing import Optional, Tuple, Union
 
 from .abc import Object
-
 
 __all__: Tuple[str, ...] = ('File',)
 

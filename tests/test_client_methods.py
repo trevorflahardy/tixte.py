@@ -1,6 +1,7 @@
+import os
+
 import aiohttp
 import pytest
-import os
 
 import tixte
 

@@ -28,6 +28,7 @@ __author__ = 'NextChai'
 __license__ = 'MIT'
 __copyright__ = 'Copyright (c) 2021-present NextChai'
 
+from . import abc as abc, utils as utils
 from .client import *
 from .config import *
 from .delete import *
@@ -35,13 +36,9 @@ from .domain import *
 from .enums import *
 from .errors import *
 from .file import *
-from .user import *
-from .upload import *
 from .permissions import *
-from . import (
-    abc as abc,
-    utils as utils,
-)
+from .upload import *
+from .user import *
 
 
 class VersionInfo(NamedTuple):

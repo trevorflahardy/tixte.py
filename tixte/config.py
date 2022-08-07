@@ -21,7 +21,8 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Any, Mapping, Protocol, Tuple, Type
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Protocol, Tuple, Type
+
 from typing_extensions import Self
 
 from .abc import Object

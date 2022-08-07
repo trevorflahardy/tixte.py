@@ -1,5 +1,6 @@
-import re
 import pathlib
+import re
+
 from setuptools import setup
 
 here = pathlib.Path(__file__).parent

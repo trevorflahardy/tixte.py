@@ -21,11 +21,11 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Optional, Tuple, Dict
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
-from .user import User
 from .abc import Object
 from .delete import DeleteResponse
+from .user import User
 
 if TYPE_CHECKING:
     from .state import State

@@ -1,7 +1,8 @@
 from typing import Any
 
-import tixte
 import discord
+
+import tixte
 
 
 class MyClient(discord.Client):
