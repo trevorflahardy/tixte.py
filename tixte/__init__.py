@@ -35,6 +35,8 @@ from .errors import *
 from .file import *
 from .user import *
 from .upload import *
+from .enums import *
+from .permissions import *
 from . import (
     abc as abc,
     utils as utils,
