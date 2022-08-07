@@ -142,7 +142,6 @@ class Config(Object):
 
             .. _discord_Embed: https://discordpy.readthedocs.io/en/latest/api.html?highlight=embed#discord.Embed
 
-
         Returns
         -------
         Any
