@@ -15,3 +15,12 @@ typeCheckingMode = "strict"
 reportUnnecessaryTypeIgnoreComment = "warning"
 reportUnusedImport = "error"
 pythonVersion = "3.8"
+exclude = [
+    "**/__pycache__",
+    "build",
+    "dist",
+    "docs",
+]
+include = [
+    "tixte",
+]
