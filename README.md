@@ -15,6 +15,11 @@ python -m pip install tixte
 py -m pip install tixte
 ```
 
+## Installing Master Branch
+```python
+python -m pip install git+https://github.com/NextChai/tixte.py
+```
+
 # Getting a Master Token
 A master token is a token given by Tixte to allow applications
 to access and make requests to the API. It can be obtained by:
