@@ -20,9 +20,9 @@ class DiscordBot(commands.Bot):
     async def upload(self, file: Union[tixte.File, discord.File]) -> tixte.Upload:
         return await self.tixte.upload(file)
 
-    async def delete_upload(self, id: str) -> None:
+    async def delete_upload(self, id: str) -> tixte.DeleteResponse:
         partial = self.tixte.get_partial_upload(id)
-        await partial.delete()
+        return await partial.delete()
 
 
 bot = DiscordBot()
