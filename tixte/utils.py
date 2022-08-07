@@ -24,7 +24,9 @@ SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, TypeVar, Callable
+
+T = TypeVar('T')
 
 __all__: Tuple[str, ...] = ('to_json',)
 
@@ -50,3 +52,11 @@ else:
 
 def parse_time(time_strp: str) -> datetime.datetime:
     return datetime.datetime.strptime(time_strp, '%Y-%m-%dT%H:%M:%S.%fZ')
+
+
+def copy_doc(copy_from: Any) -> Callable[[T], T]:
+    def wrapped(copy_to: T) -> T:
+        copy_to.__doc__ = copy_from.__doc__
+        return copy_to
+
+    return wrapped
