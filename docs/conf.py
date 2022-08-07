@@ -38,6 +38,7 @@ extensions = [
     'attributetable',
     'resourcelinks',
     'nitpick_file_ignorer',
+    'enum_tools.autoenum',
 ]
 
 autodoc_member_order = 'bysource'
