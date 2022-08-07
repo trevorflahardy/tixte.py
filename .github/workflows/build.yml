@@ -12,7 +12,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [ '3.8' ]
-        language: [ 'en']
 
     name: dists & docs (${{ matrix.python-version }}/${{ matrix.language }})
     steps:
@@ -35,11 +34,9 @@ jobs:
 
       - name: Install package
         run: |
-          pip install -e .[docs,speed,voice]
+          pip install -e .[docs, test, speed]
       - name: Build docs
         shell: bash
         run: |
           cd docs
-          sphinx-build -b html -D language=${DOCS_LANGUAGE} -a -n -T -W --keep-going . _build/html
-        env:
-          DOCS_LANGUAGE: ${{ matrix.language }}
+          sphinx-build -b html -a -n -T -W --keep-going . _build/html
