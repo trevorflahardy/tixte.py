@@ -34,6 +34,8 @@ __all__: Tuple[str, ...] = ('File',)
 
 class File(Object):
     r"""An object used to represent a file that can be used to upload an image.
+    
+    Internally, this object exactly the same as :class:`discord.File`.
 
     Parameters
     ----------
