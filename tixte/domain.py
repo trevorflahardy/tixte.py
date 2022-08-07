@@ -22,8 +22,10 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Optional, Tuple, Dict
+
 from .user import User
 from .abc import Object
+from .delete import DeleteResponse
 
 if TYPE_CHECKING:
     from .state import State
@@ -75,7 +77,7 @@ class Domain(Object):
         self.owner_id: str = data['owner']
 
     def __repr__(self) -> str:
-        return '<Domain url={0.url!r} uploads={0.uploads!r}>'.format(self)
+        return '<Domain url={0.url!r} uploads={0.uploads!r} owner_id={0.owner_id!r}>'.format(self)
 
     def __eq__(self, __o: Any) -> bool:
         return self.url == __o.url and self.uploads == __o.uploads and self.owner_id == __o.owner_id
@@ -85,7 +87,7 @@ class Domain(Object):
 
     def __hash__(self) -> int:
         return hash((self.url, self.uploads, self.owner_id))
-    
+
     def __str__(self) -> str:
         return self.url
 
@@ -115,3 +117,18 @@ class Domain(Object):
         """
         data = await self._state.http.get_user(self.owner_id)
         return self._state.store_user(data)
+
+    async def delete(self) -> DeleteResponse:
+        """|coro|
+
+        Deletes the domain.
+
+        Returns
+        -------
+        :class:`DeleteResponse`
+            The response from the delete request. :attr:`DeleteResponse.extra` will contain a ``domain``
+            key.
+        """
+        data = await self._state.http.delete_domain(self.url)
+        self._state.remove_domain(self.url)
+        return DeleteResponse(state=self._state, data=data)
