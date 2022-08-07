@@ -21,7 +21,7 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Optional, Tuple, Union, Dict
 
 from .abc import Object
 
@@ -63,7 +63,7 @@ class HTTPException(TixteException):
     def __init__(
         self,
         response: Optional[ClientResponse] = None,
-        data: Optional[Any] = None,
+        data: Optional[Union[Dict[Any, Any], Any]] = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -74,8 +74,8 @@ class HTTPException(TixteException):
         self.code: Optional[str]
 
         if isinstance(data, dict):
-            self.message = data.get('error', {}).get('message') # type: ignore
-            self.code = data.get('error', {}).get('code') # type: ignore
+            self.message = data.get('error', {}).get('message') 
+            self.code = data.get('error', {}).get('code') 
         else:
             self.message = None
             self.code = None
