@@ -102,7 +102,7 @@ class Permissions(Object):
     async def fetch(self) -> Dict[User, UploadPermissionLevel]:
         """|coro|
 
-        Fetch the permissions for the upload. This is a helpful method if :attr:`permissions` is ``None``
+        Fetch the permissions for the upload. This is a helpful method if :meth:`get` returns ``None``
         as it will fill the attribute.
 
         Returns
