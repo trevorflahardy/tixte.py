@@ -54,6 +54,8 @@ extlinks = {
 intersphinx_mapping = {
     'py': ('https://docs.python.org/3', None),
     'aio': ('https://docs.aiohttp.org/en/stable/', None),
+    'discord': ('https://discordpy.readthedocs.io/en/latest/', None),
+    'discord_ext': ('https://discordpy.readthedocs.io/en/latest/ext/commands/', None),
 }
 
 rst_prolog = """
@@ -100,7 +102,7 @@ branch = 'master' if version.endswith('a') else 'v' + version
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 locale_dirs = ['locale/']
 gettext_compact = False
