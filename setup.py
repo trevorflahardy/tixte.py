@@ -20,9 +20,12 @@ extras_require = {
         'sphinxcontrib_trio==1.1.2',
         'sphinxcontrib-websupport',
         'typing-extensions',
-        'enum-tools[sphinx]',
     ],
-    'test': ['pytest', 'pytest-asyncio', 'pytest-cov', 'enum-tools[sphinx]'],
+    'test': [
+        'pytest',
+        'pytest-asyncio',
+        'pytest-cov',
+    ],
     'speed': [
         'orjson',
     ],

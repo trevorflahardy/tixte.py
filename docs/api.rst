@@ -119,20 +119,51 @@ Enums
 Region
 ~~~~~~
 
-.. autoenum:: Region
-    :members:
+.. class:: Region
+    
+    Represents an upload region.
+
+    .. attribute:: us_east_one
+
+        Represents the US East region.
     
 Premium
 ~~~~~~~
 
-.. autoenum:: Premium
-    :members:
+.. class:: Premium
+    Represents the premium tiers of Tixte.
+
+    .. attribute:: free
+
+        The free tier. All default members have this tier.
+    
+    .. attribute:: turbo
+
+        Turbo tier. All members with this tier have an increased upload limit.
+    
+    .. attribute:: turbo_charged
+
+        Turbo charged tier. This is the highest tier. All members with this tier have an increased upload limit.
+    
 
 UploadPermissionLevel
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. autoenum:: UploadPermissionLevel
-    :members:
+.. class:: UploadPermissionLevel
+    Represents an upload permission level. This level determines
+    which members can view an upload.
+
+    .. attribute:: viewer
+        
+        A viewer of this upload.
+    
+    .. attribute:: manager
+
+        A manager of this upload. Can manage viewers.
+    
+    .. attribute:: owner
+        
+        The owner of this upload. Can manage everything.
 
 .. _tixte-api-utils:
 
