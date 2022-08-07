@@ -37,8 +37,8 @@ IDable
 Objects
 -------
 
-Configuration
-~~~~~~~~~~~~~
+Config
+~~~~~~
 
 .. attributetable:: Config
 
@@ -85,6 +85,14 @@ DeleteResponse
 .. autoclass:: DeleteResponse
     :members:
 
+Permissions
+~~~~~~~~~~~
+
+.. attributetable:: Permissions
+
+.. autoclass:: Permissions
+    :members:
+
 Users
 -----
 
@@ -105,6 +113,33 @@ ClientUser
     :members:
     :inherited-members:
 
+Enums
+-----
+
+Region
+~~~~~~
+
+.. autoenum:: Region
+    :members:
+    
+Premium
+~~~~~~~
+
+.. autoenum:: Premium
+    :members:
+
+UploadPermissionLevel
+~~~~~~~~~~~~~~~~~~~~~
+
+.. autoenum:: UploadPermissionLevel
+    :members:
+
+.. _tixte-api-utils:
+
+Utility Functions
+-----------------
+
+.. autofunction:: tixte.utils.parse_time
 
 Event Reference
 ----------------
