@@ -55,7 +55,6 @@ intersphinx_mapping = {
     'py': ('https://docs.python.org/3', None),
     'aio': ('https://docs.aiohttp.org/en/stable/', None),
     'discord': ('https://discordpy.readthedocs.io/en/latest/', None),
-    'discord_ext': ('https://discordpy.readthedocs.io/en/latest/ext/commands/', None),
 }
 
 rst_prolog = """
