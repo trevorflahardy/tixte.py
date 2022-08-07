@@ -20,7 +20,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
-from collections.abc import Sequence
 
 import io
 import sys
@@ -40,6 +39,7 @@ from typing import (
     TypeVar,
     Callable,
     List,
+    Sequence,
 )
 from typing_extensions import TypeAlias
 
@@ -148,7 +148,11 @@ class HTTP:
         method = route.method
         url = route.url
 
-        headers = {'User-Agent': self.user_agent, 'Authorization': self.master_key}
+        headers = {
+            'User-Agent': self.user_agent,
+            'Authorization': self.master_key,
+            'Content-Type': 'application/json',
+        }
         kwargs['headers'] = headers
 
         if files is not None:
@@ -162,6 +166,7 @@ class HTTP:
                 )
 
             kwargs['data'] = data
+            kwargs['headers']['Content-Type'] = 'application/octet-stream'
 
         response: Optional[aiohttp.ClientResponse] = None
         async with self.session_lock:
@@ -171,21 +176,16 @@ class HTTP:
 
                     data = await self._json_or_text(response)
 
-                    if 300 > response.status >= 200:  # Everything is ok
-                        fmt_data = (
-                            data
-                            if not isinstance(data, bytes)
-                            else f'<binary data with len {len(data)}>'
+                    log.debug(
+                        self.REQUEST_LOG.format(
+                            method=method,
+                            url=url,
+                            json=data,
+                            status=response.status,
                         )
-                        log.debug(
-                            self.REQUEST_LOG.format(
-                                method=method,
-                                url=url,
-                                json=fmt_data,
-                                status=response.status,
-                            )
-                        )
+                    )
 
+                    if 300 > response.status >= 200:  # Everything is ok
                         if files is not None:
                             for file in files:
                                 file.close()
@@ -261,7 +261,11 @@ class HTTP:
                 raise HTTPException(response, 'failed to get asset')
 
     def upload(
-        self, file: File, *, filename: Optional[str] = None, domain: Optional[Union[Domain, str]] = None
+        self,
+        file: File,
+        *,
+        filename: Optional[str] = None,
+        domain: Optional[Union[Domain, str]] = None,
     ) -> Response[Dict[Any, Any]]:
         r = Route('POST', '/upload')
 
@@ -280,22 +284,33 @@ class HTTP:
         r = Route('GET', '/users/@me/uploads/{upload_id}', upload_id=upload_id)
         return self.request(r)
 
-    def get_upload_permissions(self, upload_id: str) -> Response[Dict[Any, Any]]:
+    def get_upload_permissions(self, upload_id: str) -> Response[List[Dict[Any, Any]]]:
         r = Route('GET', '/users/@me/uploads/{upload_id}/permissions', upload_id=upload_id)
+        return self.request(r)
+
+    def get_uploads(self) -> Response[Dict[Any, Any]]:
+        r = Route('GET', '/users/@me/uploads')
         return self.request(r)
 
     def add_upload_permissions(
         self,
+        *,
         upload_id: str,
-        permission_level: Literal[1, 2, 3],
         user_id: str,
+        permission_level: Literal[1, 2, 3],
         message: Optional[str] = None,
     ) -> Response[Dict[str, Any]]:
         r = Route('POST', '/users/@me/uploads/{upload_id}/permissions', upload_id=upload_id)
-        data = {'permission_level': permission_level, 'user': user_id, 'message': message}
-        return self.request(r, data=data)
+        data = {'permission_level': permission_level, 'user': user_id}
 
-    def remove_upload_permissions(self, upload_id: str, user_id: str) -> Response[Dict[str, Any]]:
+        if message is not None:
+            data['message'] = message
+
+        return self.request(r, json=data)
+
+    def remove_upload_permissions(
+        self, *, upload_id: str, user_id: str
+    ) -> Response[Dict[str, Any]]:
         #  {"success":true,"data":{}}
         r = Route(
             'DELETE',
@@ -305,8 +320,8 @@ class HTTP:
         )
         return self.request(r)
 
-    def update_upload_permissions(
-        self, upload_id: str, user_id: str, permission_level: Literal[1, 2, 3]
+    def edit_upload_permissions(
+        self, *, upload_id: str, user_id: str, permission_level: Literal[1, 2, 3]
     ) -> Response[Dict[Any, Any]]:
         r = Route(
             'PATCH',
@@ -314,7 +329,34 @@ class HTTP:
             upload_id=upload_id,
             user_id=user_id,
         )
-        return self.request(r, data={'permission_level': permission_level})
+        return self.request(r, json={'permission_level': permission_level})
+
+    def search_upload(
+        self,
+        *,
+        query: str,
+        domains: List[str] = [],
+        extensions: List[str] = [],
+        limit: int = 48,
+        min_size: Optional[int] = None,
+        max_size: Optional[int] = None,
+        sort_by: str = 'relevant',
+    ) -> Response[List[Dict[Any, Any]]]:
+        data: Dict[str, Any] = {
+            'domains': domains,
+            'extensions': extensions,
+            'limit': limit,
+            'permission_levels': [3],
+            'query': query,
+            'size': {
+                'min': min_size,
+                'max': max_size,
+            },
+            'sort_by': sort_by,
+        }
+
+        r = Route('POST', '/users/@me/uploads/search')
+        return self.request(r, json=data)
 
     def get_client_user(self) -> Response[Dict[Any, Any]]:
         r = Route('GET', '/users/@me')
@@ -324,19 +366,24 @@ class HTTP:
         r = Route('GET', '/users/{user_id}', user_id=user_id)
         return self.request(r)
 
+    # NOTE: Private endpoint:
     def search_user(self, query: str, limit: int = 6) -> Response[List[Dict[Any, Any]]]:
         r = Route('POST', 'users/search')
         data = {'query': query, 'limit': limit}
-        return self.request(r, data=data)
+        return self.request(r, json=data)
 
     def get_domains(self) -> Response[Dict[Any, Any]]:
         r = Route('GET', '/users/@me/domains')
         return self.request(r)
 
-    def create_domain(self, domain: str, custom: bool = False) -> Response[Dict[Any, Any]]:
-        r = Route('POST', '/users/@me/domains')
+    # NOTE: Not implemented
+    def get_domain(self) -> Response[Dict[Any, Any]]:
+        ...
+
+    def create_domain(self, domain: str, *, custom: bool = False) -> Response[Dict[Any, Any]]:
+        r = Route('PATCH', '/users/@me/domains')
         data = {'domain': domain, 'custom': custom}
-        return self.request(r, data=data)
+        return self.request(r, json=data)
 
     def delete_domain(self, domain: str) -> Response[Dict[Any, Any]]:
         # {"success":true,"data":{"message":"Domain successfully deleted","domain":"foo_bar.tixte.co"}}
