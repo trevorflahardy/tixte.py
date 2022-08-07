@@ -29,15 +29,19 @@ import enum_tools.documentation
 @enum_tools.documentation.document_enum
 class Region(enum.Enum):
     """Represents an upload region."""
-    us_east_one = 'us-east-1' # doc: Represents the US East region.
+
+    us_east_one = 'us-east-1'  # doc: Represents the US East region.
 
 
 @enum_tools.documentation.document_enum
 class Premium(enum.Enum):
     """Represents the premium tiers of Tixte."""
-    free = 0 # doc: The free tier. All default members have this tier.
-    turbo = 1 # doc: Turbo tier. All members with this tier have an increased upload limit.
-    turbo_charged = 2 # doc: Turbo charged tier. This is the highest tier. All members with this tier have an increased upload limit.
+
+    free = 0  # doc: The free tier. All default members have this tier.
+    turbo = 1  # doc: Turbo tier. All members with this tier have an increased upload limit.
+    turbo_charged = (
+        2  # doc: Turbo charged tier. This is the highest tier. All members with this tier have an increased upload limit.
+    )
 
 
 @enum_tools.documentation.document_enum
@@ -45,6 +49,7 @@ class UploadPermissionLevel(enum.Enum):
     """Represents an upload permission level. This level determines
     which members can view an upload.
     """
-    viewer = 1 # doc: A viewer of this upload.
-    manager = 2 # doc: A manager of this upload. Can manage viewers.
-    owner = 3 # doc: The owner of this upload. Can manage everything.
+
+    viewer = 1  # doc: A viewer of this upload.
+    manager = 2  # doc: A manager of this upload. Can manage viewers.
+    owner = 3  # doc: The owner of this upload. Can manage everything.

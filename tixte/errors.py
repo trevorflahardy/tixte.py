@@ -74,8 +74,8 @@ class HTTPException(TixteException):
         self.code: Optional[str]
 
         if isinstance(data, dict):
-            self.message = data.get('error', {}).get('message') 
-            self.code = data.get('error', {}).get('code') 
+            self.message = data.get('error', {}).get('message')
+            self.code = data.get('error', {}).get('code')
         else:
             self.message = None
             self.code = None

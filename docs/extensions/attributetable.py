@@ -106,9 +106,7 @@ class PyAttributeTable(SphinxDirective):
     def parse_name(self, content: str) -> Tuple[str, str]:
         match = _name_parser_regex.match(content)
         if match is None:
-            raise RuntimeError(
-                f"content {content} somehow doesn't match regex in {self.env.docname}."
-            )
+            raise RuntimeError(f"content {content} somehow doesn't match regex in {self.env.docname}.")
         path, name = match.groups()
         if path:
             modulename = path.rstrip('.')

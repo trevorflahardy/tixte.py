@@ -184,15 +184,11 @@ class Upload(PartialUpload):
         self.size: int = data['size']
         self.mimetype: str = data['mimetype']
 
-        self.expiration: Optional[datetime.datetime] = (
-            expiration := data['expiration']
-        ) and parse_time(expiration)
+        self.expiration: Optional[datetime.datetime] = (expiration := data['expiration']) and parse_time(expiration)
         self.extension: str = data['extension']
         self.url: str = data.get('url') or f'https://{self.domain_url}/{self.name}.{self.extension}'
         self.direct_url: Optional[str] = data.get('direct_url')
-        self.permission_level: UploadPermissionLevel = UploadPermissionLevel(
-            data['permission_level']
-        )
+        self.permission_level: UploadPermissionLevel = UploadPermissionLevel(data['permission_level'])
 
     def __repr__(self) -> str:
         return '<Upload id={0.id!r} filename={0.name!r} extension={0.extension!r} url={0.url!r} direct_url={0.direct_url!r}>'.format(

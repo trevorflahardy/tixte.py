@@ -120,9 +120,7 @@ class HTTP:
         self.session: Optional[aiohttp.ClientSession] = session
         self.session_lock: asyncio.Lock = asyncio.Lock()
 
-        user_agent = (
-            'TixteClient (https://github.com/NextChai/Tixte {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
-        )
+        user_agent = 'TixteClient (https://github.com/NextChai/Tixte {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
 
     async def create_client_session(self) -> None:
@@ -308,9 +306,7 @@ class HTTP:
 
         return self.request(r, json=data)
 
-    def remove_upload_permissions(
-        self, *, upload_id: str, user_id: str
-    ) -> Response[Dict[str, Any]]:
+    def remove_upload_permissions(self, *, upload_id: str, user_id: str) -> Response[Dict[str, Any]]:
         #  {"success":true,"data":{}}
         r = Route(
             'DELETE',

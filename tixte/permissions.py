@@ -38,15 +38,11 @@ def _parse_permissions(state: State, parser: None) -> None:
 
 
 @overload
-def _parse_permissions(
-    state: State, parser: List[Dict[str, Any]]
-) -> Dict[User, UploadPermissionLevel]:
+def _parse_permissions(state: State, parser: List[Dict[str, Any]]) -> Dict[User, UploadPermissionLevel]:
     ...
 
 
-def _parse_permissions(
-    state: State, parser: Optional[List[Dict[str, Any]]]
-) -> Optional[Dict[User, UploadPermissionLevel]]:
+def _parse_permissions(state: State, parser: Optional[List[Dict[str, Any]]]) -> Optional[Dict[User, UploadPermissionLevel]]:
     if not parser:
         return None
 
@@ -82,9 +78,7 @@ class Permissions(Object):
         self._state: State = state
         self.upload: Union[PartialUpload, Upload] = upload
 
-        self._permissions: Optional[Dict[User, UploadPermissionLevel]] = _parse_permissions(
-            state, permission_mapping
-        )
+        self._permissions: Optional[Dict[User, UploadPermissionLevel]] = _parse_permissions(state, permission_mapping)
 
     def get(self) -> Optional[Dict[User, UploadPermissionLevel]]:
         """Get the permissions of the upload.
@@ -114,9 +108,7 @@ class Permissions(Object):
         self._permissions = permissions = _parse_permissions(self._state, data)
         return permissions
 
-    async def add(
-        self, user: User, /, *, level: UploadPermissionLevel, message: Optional[str] = None
-    ) -> User:
+    async def add(self, user: User, /, *, level: UploadPermissionLevel, message: Optional[str] = None) -> User:
         """|coro|
 
         Add a user to this upload\'s permissions. For example, if this is a private upload you can grant

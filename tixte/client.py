@@ -129,9 +129,7 @@ class Client(Object):
 
         callables = self._listeners.get(event_fmt, [])
         for item in callables:
-            tasks.append(
-                asyncio.create_task(item(*args, **kwargs), name=f'tixte-dispatcher-{event_fmt}')
-            )
+            tasks.append(asyncio.create_task(item(*args, **kwargs), name=f'tixte-dispatcher-{event_fmt}'))
 
         return tasks
 
