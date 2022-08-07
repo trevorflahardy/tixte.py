@@ -76,6 +76,7 @@ Upload
 
 .. autoclass:: Upload
     :members:
+    :inherited-members:
 
 DeleteResponse
 ~~~~~~~~~~~~~~
