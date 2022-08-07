@@ -138,9 +138,7 @@ class Config(Object):
         embed_cls: Type[Any]
             The embed class you want to use. Must implement
             a ``from_dict`` classmethod. Something you could pass here
-            would be a `discord_Embed`_ class.
-
-            .. _discord_Embed: https://discordpy.readthedocs.io/en/latest/api.html?highlight=embed#discord.Embed
+            would be a :class:`discord.Embed` class.
 
         Returns
         -------
