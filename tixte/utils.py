@@ -51,10 +51,40 @@ else:
 
 
 def parse_time(time_strp: str) -> datetime.datetime:
+    """Parses the given tixte time string into a datetime object.
+    
+    Parameters
+    ----------
+    time_strp: :class:`str`
+        The time string to parse.
+    
+    Returns
+    -------
+    :class:`datetime.datetime`
+        The parsed datetime object.
+    """
     return datetime.datetime.strptime(time_strp, '%Y-%m-%dT%H:%M:%S.%fZ')
 
 
 def copy_doc(copy_from: Any) -> Callable[[T], T]:
+    """Copy the documentation from the given object to the decorated function.
+    
+    .. code-block:: python3
+
+        @copy_doc(MyObject)
+        async def foo():
+            pass
+    
+    Parameters
+    ----------
+    copy_from: Any
+        The object to copy the documentation from.
+    
+    Returns
+    -------
+    Callable[..., Any]
+        A wrapped callable that copies the documentation from the given object.
+    """
     def wrapped(copy_to: T) -> T:
         copy_to.__doc__ = copy_from.__doc__
         return copy_to
