@@ -30,12 +30,13 @@ __copyright__ = 'Copyright (c) 2021-present NextChai'
 
 from .client import *
 from .config import *
+from .delete import *
 from .domain import *
+from .enums import *
 from .errors import *
 from .file import *
 from .user import *
 from .upload import *
-from .enums import *
 from .permissions import *
 from . import (
     abc as abc,
