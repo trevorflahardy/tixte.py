@@ -34,7 +34,7 @@ jobs:
 
       - name: Install package
         run: |
-          pip install -e .[docs, test, speed]
+          pip install -e .[docs,test,speed]
       - name: Build docs
         shell: bash
         run: |
