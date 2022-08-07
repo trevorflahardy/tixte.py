@@ -172,6 +172,9 @@ Exceptions
 .. autoexception:: TixteServerError
     :members:
 
+.. autoexception:: PaymentRequired
+    :members:
+
 
 Exception Hierarchy
 ~~~~~~~~~~~~~~~~~~~~~
@@ -184,3 +187,4 @@ Exception Hierarchy
               - :exc:`NotFound`
               - :exc:`Forbidden`
               - :exc:`TixteServerError`
+              - :exc:`PaymentRequired`
