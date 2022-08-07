@@ -22,7 +22,18 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Union, Any, Callable, Dict, List, Optional, Tuple, TypeVar, Coroutine
+from typing import (
+    TYPE_CHECKING,
+    Union,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    TypeVar,
+    Coroutine,
+)
 from typing_extensions import ParamSpec, Self
 
 from .http import HTTP
@@ -30,6 +41,7 @@ from .state import State
 from .abc import Object
 from .config import Config
 from .upload import Upload, PartialUpload
+from .errors import NotFound
 
 if TYPE_CHECKING:
     import aiohttp
@@ -218,6 +230,36 @@ class Client(Object):
         """
         return self._state.get_user(id)
 
+    def get_domain(self, url: str) -> Optional[Domain]:
+        """Gets a domain from the internal cache of domains.
+
+        Parameters
+        ----------
+        url: :class:`str`
+            The url of the domain to get.
+
+        Returns
+        -------
+        Optional[:class:`Domain`]
+            The domain with the given url, if it exists within the internal cache.
+        """
+        return self._state.get_domain(url)
+
+    def get_partial_upload(self, id: str, /) -> PartialUpload:
+        """A method used to get a partial upload from its ID.
+
+        Parameters
+        ----------
+        id: :class:`str`
+            The ID of the partial upload to get.
+
+        Returns
+        -------
+        :class:`PartialUpload`
+            The partial upload with the given ID.
+        """
+        return PartialUpload(state=self._state, id=id)
+
     async def fetch_user(self, id: str, /) -> User:
         """|coro|
 
@@ -292,21 +334,6 @@ class Client(Object):
         """
         return await self._http.url_to_file(url=url, filename=filename or 'attachment1')
 
-    def get_partial_upload(self, id: str, /) -> PartialUpload:
-        """A method used to get a partial upload from its ID.
-
-        Parameters
-        ----------
-        id: :class:`str`
-            The ID of the partial upload to get.
-
-        Returns
-        -------
-        :class:`PartialUpload`
-            The partial upload with the given ID.
-        """
-        return PartialUpload(state=self._state, id=id)
-
     async def fetch_client_user(self) -> ClientUser:
         """|coro|
 
@@ -320,21 +347,6 @@ class Client(Object):
         """
         data = await self._http.get_client_user()
         return self._state.store_client_user(data)
-
-    def get_domain(self, url: str) -> Optional[Domain]:
-        """Gets a domain from the internal cache of domains.
-
-        Parameters
-        ----------
-        url: :class:`str`
-            The url of the domain to get.
-
-        Returns
-        -------
-        Optional[:class:`Domain`]
-            The domain with the given url, if it exists within the internal cache.
-        """
-        return self._state.get_domain(url)
 
     async def fetch_domains(self) -> List[Domain]:
         """|coro|
@@ -371,7 +383,9 @@ class Client(Object):
     async def fetch_upload(self, upload_id: str, /) -> Upload:
         """|coro|
 
-        Fetch an upload from its ID.
+        Fetch an upload from its ID. Please note this is a wrapper around
+        :meth:`search_upload` as the API doesn't have a direct endpoint
+        for fetching an upload.
 
         Parameters
         ----------
@@ -390,5 +404,126 @@ class Client(Object):
         HTTPException
             An HTTP exception has occurred.
         """
-        data = await self._http.get_upload(upload_id)
-        return Upload(state=self._state, data=data)
+        data = await self._http.search_upload(query=upload_id, limit=1)
+        if not data:
+            raise NotFound(None, data, 'Upload not found!')
+        
+        return Upload(state=self._state, data=data[0])
+
+    async def fetch_uploads(self) -> List[Upload]:
+        """|coro|
+
+        Fetches all of the existing uploads from Tixte.
+
+        Returns
+        -------
+        List[:class:`Upload`]
+            A list of all uploads that you have uploaded to Tixte.
+        """
+        data = await self._http.get_uploads()
+        return [Upload(state=self._state, data=entry) for entry in data['uploads']]
+
+    async def search_upload(
+        self,
+        query: str,
+        /,
+        *,
+        domains: List[Domain] = [],
+        limit: int = 48,
+        min_size: Optional[int] = None,
+        max_size: Optional[int] = None,
+        sort_by: str = 'relevant',
+    ) -> List[Upload]:
+        """|coro|
+
+        Search for an upload by its name.
+
+        Parameters
+        ----------
+        query: :class:`str`
+            The query to search for.
+        domains: List[:class:`Domain`]
+            Limit your query to a specific domain(s).
+        limit: :class:`int`
+            The maximum number of results to return. This defaults to ``48`` as that's
+            what Tixte defaults to.
+        min_size: Optional[:class:`int`]
+            The minimum size of the upload. Defaults to ``None``.
+        max_size: Optional[:class:`int`]
+            The maximum size of the upload. Defaults to ``None``.
+        sort_by: :class:`str`
+            The sort order of the results. This defaults to ``relevant``. Other sort_by options
+            are currently unknown.
+
+        Returns
+        -------
+        List[:class:`Upload`]
+            A list of all uploads that match the query.
+        """
+        data = await self._http.search_upload(
+            query=query,
+            domains=[d.url for d in domains],
+            limit=limit,
+            min_size=min_size,
+            max_size=max_size,
+            sort_by=sort_by,
+        )
+        return [Upload(state=self._state, data=entry) for entry in data]
+
+    # NOTE: Not a public endpoint :)
+    # async def search_user(self, name: str, /, *, limit: int = 6) -> List[User]:
+    #     """|coro|
+    #
+    #     Search for a user by name.
+    #
+    #     Parameters
+    #     ----------
+    #     name: :class:`str`
+    #         The name of the user to search for.
+    #     limit: Optional[:class:`int`]
+    #         The maximum number of users to return. Defaults to ``6`` as that's what Tixte uses.
+    #
+    #     Returns
+    #     -------
+    #     List[:class:`User`]
+    #         A list of users that match the search.
+    #     """
+    #     data = await self._http.search_user(name, limit=limit)
+    #     return [self._state.store_user(entry) for entry in data]
+
+    async def create_domain(self, domain: str, /, *, is_custom: bool = False) -> Domain:
+        """|coro|
+
+        Create a domain on Tixte.
+
+        Parameters
+        ----------
+        domain: :class:`str`
+            The url of the domain to create.
+        is_custom: Optional[:class:`bool`]
+            Denotes if the domain is a custom domain that you personally own, instead of a subdomain
+            that tixte creates for you. If ``False``, than the domain must end in ``tixte.co``, ``likes.cash``,
+            ``discowd.com``, ``has.rocks``, ``is-from.space``, ``bot.style``, ``needs.rest``, or ``wants.solutions``.
+
+        Returns
+        -------
+        :class:`Domain`
+            The domain that was created.
+        """
+        await self._http.create_domain(domain, custom=is_custom)
+        owner = self.user or await self.fetch_client_user()
+        return self._state.store_domain({'name': domain, 'uploads': 0, 'owner': owner.id})
+
+    async def fetch_upload_key(self) -> str:
+        """|coro|
+
+        Fetches your Tixte upload key. This upload key can be used on ``Tixte Snap``, ``ShareX``, or ``MagicCap``.
+        You can learn more on your Tixte Dashboard under the "Integrations" section.
+
+        Returns
+        --------
+        :class:`str`
+            Your upload key.
+        """
+        data = await self._http.get_upload_key()
+        return data['api_key']
