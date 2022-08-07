@@ -77,7 +77,7 @@ class Client(Object):
         on the github readme.
     domain: :class:`str`
         The domain you want to upload to.
-        If you haven't already, you need to create a domain at `https://tixte.com/dashboard/domains`
+        If you haven't already, you need to create a domain at `the tixte domain dashboard <https://tixte.com/dashboard/domains>`_.
     session: Optional[:class:`aiohttp.ClientSession`]
         An optional session to pass for HTTP requests. If not provided, a new session will be created
         for you.
@@ -230,7 +230,7 @@ class Client(Object):
         """
         return self._state.get_user(id)
 
-    def get_domain(self, url: str) -> Optional[Domain]:
+    def get_domain(self, url: str, /) -> Optional[Domain]:
         """Gets a domain from the internal cache of domains.
 
         Parameters
@@ -295,7 +295,7 @@ class Client(Object):
         Parameters
         ----------
         file: :class:`File`
-            The file to upload. Please note `discord.py's file objects <https://discordpy.readthedocs.io/en/latest/api.html?highlight=file#discord.File>`_ as well.
+            The file to upload. Please note :class:`discord.File` objects as well.
         domain: Optional[Union[:class:`Domain`, :class:`str`]]
             Optionally, upload to a different domain than the client's default.
 
