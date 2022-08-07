@@ -33,7 +33,7 @@ from typing import (
 from .file import File
 from .abc import IDable
 from .utils import parse_time
-from .enums import Premium
+from .enums import Premium, Region
 
 if TYPE_CHECKING:
     from .state import State
@@ -95,7 +95,7 @@ class User(IDable):
 
         self.id: str = data['id']
         self.username: str = data['username']
-        self.avatar: Optional[str] = data['avatar']
+        self.avatar: Optional[str] = data.get('avatar')
 
     def __str__(self) -> str:
         return self.username
@@ -185,7 +185,7 @@ class ClientUser(User):
         self.email: str = data['email']
         self.email_verified: bool = data['email_verified']
         self.phone: Optional[Any] = data['phone']
-        self.upload_region: str = data['upload_region']
+        self.upload_region: Region = Region(data['upload_region'])
         self._last_login = data['last_login']
 
     def __repr__(self) -> str:
