@@ -22,7 +22,7 @@ extras_require = {
         'typing-extensions',
         'enum-tools[sphinx]',
     ],
-    'test': ['pytest', 'pytest-asyncio', 'pytest-cov'],
+    'test': ['pytest', 'pytest-asyncio', 'pytest-cov', 'enum-tools[sphinx]'],
 }
 
 setup(
