@@ -407,7 +407,7 @@ class Client(Object):
         data = await self._http.search_upload(query=upload_id, limit=1)
         if not data:
             raise NotFound(None, data, 'Upload not found!')
-        
+
         return Upload(state=self._state, data=data[0])
 
     async def fetch_uploads(self) -> List[Upload]:
