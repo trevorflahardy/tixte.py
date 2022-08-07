@@ -26,13 +26,14 @@ TIXTE_OTHER_USER: str = '71dc9871ca28446c8baffbd74430f2ad'
 TIXTE_TESTING_UPLOAD_NAME: str = 'xqc.png'
 TIXTE_TESTING_UPLOAD_ID: str = 'l5r277bx20a'
 
+
 @pytest.mark.asyncio
 async def test_fetch_user() -> None:
     session = aiohttp.ClientSession()
     client = tixte.Client(TIXTE_MASTER_KEY, TIXTE_MASTER_DOMAIN, session=session)
-    
+
     user = await client.fetch_user(TIXTE_ACCOUNT_ID)
-    
+
     await client.cleanup()
 
     assert user.id == TIXTE_ACCOUNT_ID
