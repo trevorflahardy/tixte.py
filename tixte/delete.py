@@ -21,7 +21,7 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Tuple, Any
+from typing import TYPE_CHECKING, Dict, Tuple
 
 from .abc import Object
 
@@ -44,10 +44,10 @@ class DeleteResponse(Object):
 
     __slots__: Tuple[str, ...] = ('_state', 'message', 'extra')
 
-    def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
+    def __init__(self, *, state: State, data: Dict[str, str]) -> None:
         self._state: State = state
-        self.message: str = data.pop('message')
-        self.extra: Dict[str, Any] = data
+        self.message: str = data['message']
+        self.extra: Dict[str, str] = data
 
     def __repr__(self) -> str:
         return '<DeleteResponse message={0.message!r}>'.format(self)
