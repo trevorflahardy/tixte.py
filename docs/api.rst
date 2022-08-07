@@ -131,6 +131,7 @@ Premium
 ~~~~~~~
 
 .. class:: Premium
+    
     Represents the premium tiers of Tixte.
 
     .. attribute:: free
@@ -150,6 +151,7 @@ UploadPermissionLevel
 ~~~~~~~~~~~~~~~~~~~~~
 
 .. class:: UploadPermissionLevel
+
     Represents an upload permission level. This level determines
     which members can view an upload.
 
