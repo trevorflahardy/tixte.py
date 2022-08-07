@@ -56,6 +56,7 @@ class UploadPermissionLevel(enum.Enum):
 
 try:
     import enum_tools.documentation  # pyright: ignore[reportMissingImports]
+
     enum_tools.documentation.document_enum(Region)
     enum_tools.documentation.document_enum(Premium)
     enum_tools.documentation.document_enum(UploadPermissionLevel)

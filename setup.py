@@ -23,7 +23,9 @@ extras_require = {
         'enum-tools[sphinx]',
     ],
     'test': ['pytest', 'pytest-asyncio', 'pytest-cov', 'enum-tools[sphinx]'],
-    'speed': ['orjson',],
+    'speed': [
+        'orjson',
+    ],
 }
 
 setup(
