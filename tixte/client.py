@@ -79,6 +79,10 @@ class Client(Object):
     session: Optional[:class:`aiohttp.ClientSession`]
         An optional session to pass for HTTP requests. If not provided, a new session will be created
         for you.
+    fetch_client_user_on_start: Optional[:class:`bool`]
+        Whether to fetch the client's user on startup. This means the :attr:`user` method will be :class:`ClientUser`
+        100% of the time. Defaults to ``False``. Please note this is only valid if you are using the client
+        within a context manager setting. Otherwise, no user will be fetched.
     """
 
     def __init__(
@@ -88,6 +92,7 @@ class Client(Object):
         /,
         *,
         session: Optional[aiohttp.ClientSession] = None,
+        fetch_client_user_on_start: bool = False,
     ) -> None:
         self._http = HTTP(
             master_key=master_key,
@@ -100,10 +105,14 @@ class Client(Object):
         self._state._get_client = lambda: self  # type: ignore
 
         self._listeners: Dict[str, List[Callable[..., Any]]] = {}
+        self.fetch_client_user_on_start: bool = fetch_client_user_on_start
 
     async def __aenter__(self) -> Self:
         if self._http.session is None:
             await self._http.create_client_session()
+
+        if self.fetch_client_user_on_start:
+            await self.fetch_client_user()
 
         return self
 
@@ -146,7 +155,9 @@ class Client(Object):
         return tasks
 
     def event(self, event: Optional[str] = None) -> Callable[[EventCoro[P, T]], EventCoro[P, T]]:
-        """A decorator used to register a coroutine as a listener for an event.
+        """A decorator that registers an event to listen for. This is used to register
+        an event to listen for. The name of the coroutine will be used as the event name
+        unless otherwise specified.
 
         .. code-block:: python3
 
@@ -157,7 +168,14 @@ class Client(Object):
         Parameters
         ----------
         event: Optional[:class:`str`]
-            The event to listen for. If not provided, the name of the coroutine will be used.
+            The event to listen for. If not provided, the name of the function will be used.
+
+        Raises
+        ------
+        TypeError
+            The function passed is not a coroutine.
+        ValueError
+            The event name does not start with ``on_``.
         """
 
         def wrapped(func: EventCoro[P, T]) -> EventCoro[P, T]:
@@ -176,7 +194,7 @@ class Client(Object):
         return wrapped
 
     def remove_listener(self, event: str, *, callback: Optional[EventCoro[P, T]] = None) -> None:
-        """A method to remove a listener from an event.
+        """Removes a listener from the client via the event name and callback.
 
         Parameters
         ----------
@@ -201,7 +219,9 @@ class Client(Object):
     async def cleanup(self) -> None:
         """|coro|
 
-        A helper coroutine used to cleanup the client's HTTP session.
+        A helper cleanup the client's HTTP session. Internally,
+        this is used in the context manager to cleanup the session, but can be used
+        to manually cleanup the session if needed.
         """
         if not self._http.session:
             raise ValueError('No session to cleanup')
@@ -209,7 +229,7 @@ class Client(Object):
         await self._http.session.close()
 
     def get_user(self, id: str, /) -> Optional[User]:
-        """Used to get a user from the internal cache of users.
+        """Get a user from the internal cache of users.
 
         Parameters
         ----------
@@ -239,7 +259,9 @@ class Client(Object):
         return self._state.get_domain(url)
 
     def get_partial_upload(self, id: str, /) -> PartialUpload:
-        """A method used to get a partial upload from its ID.
+        """A method used to get a partial upload from its ID. This will
+        create a partial upload object that can be used to delete the upload
+        without having to fetch it.
 
         Parameters
         ----------
@@ -256,7 +278,7 @@ class Client(Object):
     async def fetch_user(self, id: str, /) -> User:
         """|coro|
 
-        A coroutine used to fetch a user from its ID.
+        Fetches a user from the given ID.
 
         Parameters
         ----------
@@ -265,8 +287,8 @@ class Client(Object):
 
         Returns
         -------
-        Optional[:class:`User`]
-            The user with the given ID, if it exists within the internal cache.
+        :class:`User`
+            The fetched user.
 
         Raises
         ------
@@ -283,12 +305,12 @@ class Client(Object):
     async def upload(self, file: File, /, *, domain: Optional[Union[Domain, str]] = None) -> Upload:
         """|coro|
 
-        A coroutine used to upload a file to Tixte.
+        Upload a file to Tixte.
 
         Parameters
         ----------
         file: :class:`File`
-            The file to upload. Please note :class:`discord.File` objects as well.
+            The file to upload. Please note :class:`discord.File` objects work as well.
         domain: Optional[Union[:class:`Domain`, :class:`str`]]
             Optionally, upload to a different domain than the client's default.
 
@@ -310,7 +332,8 @@ class Client(Object):
     async def url_to_file(self, url: str, /, *, filename: Optional[str] = None) -> File:
         """|coro|
 
-        A helper coroutine to convert a URL to a :class:`File`.
+        Converts the given URL to a :class:`File` object. This will fetch the contents
+        of the image URL, and then create a :class:`File` object with the contents.
 
         Parameters
         ----------
@@ -330,8 +353,9 @@ class Client(Object):
     async def fetch_client_user(self) -> ClientUser:
         """|coro|
 
-        A coroutine used to fetch the client's user. Once fetched for the first time,
-        this can be accessed via the :attr:`user` attribute.
+        Fetch the client's user. Once fetched for the first time, this can be accessed via the
+        :attr:`user` attribute. Note that the client does not fetch this on login unless specifically requested
+        via the :attr:`fetch_client_user_on_start` attribute is ``True`` and the client is run in a context manager setting.
 
         Returns
         -------
@@ -362,8 +386,9 @@ class Client(Object):
     async def fetch_config(self) -> Config:
         """|coro|
 
-        A coroutine used to fetch the configuration settings
-        you have within Tixte.
+        Fetch the configuration settings you have within Tixte.
+        Those settings can be found on the Tixte website on the Embed Editor page,
+        and the Page Design page within your Tixte dashboard.
 
         Returns
         -------
@@ -487,7 +512,7 @@ class Client(Object):
     async def create_domain(self, domain: str, /, *, is_custom: bool = False) -> Domain:
         """|coro|
 
-        Create a domain on Tixte.
+        Creates a domain on Tixte.
 
         Parameters
         ----------
