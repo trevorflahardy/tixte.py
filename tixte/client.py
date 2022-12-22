@@ -184,8 +184,6 @@ class Client(Object):
             except ValueError:
                 pass
 
-    # Begin public methods
-
     @property
     def user(self) -> Optional[ClientUser]:
         """Optional[:class:`ClientUser`]: The client's user, if in the internal cache."""
