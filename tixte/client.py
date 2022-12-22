@@ -54,6 +54,14 @@ class Client(Object):
     other objects from the API. The client should be used as a context manager to ensure
     the cleanup of the aiohttp session, but it doesn't have to be.
 
+    .. container:: operations
+
+        .. describe:: async with x
+
+            Enters the client as a context manager. This will automatically
+            cleanup the :attr:`~session` when the context is exited. Optionally,
+            you can manage the :attr:`~session` yourself and pass it to the client.
+
     .. code-block:: python3
 
         async with tixte.Client('master_key', 'domain') as client:
