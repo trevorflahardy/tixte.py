@@ -22,6 +22,9 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import enum
+from typing import Tuple
+
+__all__: Tuple[str, ...] = ('Region', 'Premium', 'UploadPermissionLevel')
 
 
 class Region(enum.Enum):
