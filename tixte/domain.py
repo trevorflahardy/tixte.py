@@ -57,6 +57,10 @@ class Domain(Object):
 
             Returns the hash of the domain.
 
+        .. describe:: str(x)
+
+            Returns the url of the domain.
+
     Attributes
     ---------
     url: :class:`str`
