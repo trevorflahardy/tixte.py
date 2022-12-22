@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 from .abc import Object
 from .delete import DeleteResponse
 from .user import User
+from .utils import simple_repr
 
 if TYPE_CHECKING:
     from .state import State
@@ -33,6 +34,7 @@ if TYPE_CHECKING:
 __all__: Tuple[str, ...] = ('Domain',)
 
 
+@simple_repr
 class Domain(Object):
     """
     The class that represents a domain.
@@ -79,9 +81,6 @@ class Domain(Object):
         self.url: str = data['name']
         self.uploads: int = data['uploads']
         self.owner_id: str = data['owner']
-
-    def __repr__(self) -> str:
-        return '<Domain url={0.url!r} uploads={0.uploads!r} owner_id={0.owner_id!r}>'.format(self)
 
     def __eq__(self, __o: Any) -> bool:
         return self.url == __o.url and self.uploads == __o.uploads and self.owner_id == __o.owner_id

@@ -27,10 +27,12 @@ import os
 from typing import Optional, Tuple, Union
 
 from .abc import Object
+from .utils import simple_repr
 
 __all__: Tuple[str, ...] = ('File',)
 
 
+@simple_repr
 class File(Object):
     r"""An object used to represent a file that can be used to upload an image.
 

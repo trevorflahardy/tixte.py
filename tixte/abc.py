@@ -22,10 +22,12 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Tuple
+from .utils import simple_repr
 
 __all__: Tuple[str, ...] = ('Object', 'IDable')
 
 
+@simple_repr
 class Object(object):
     """The base object for all objects
     within the Tixte system. Every class inherits from this.
@@ -33,10 +35,8 @@ class Object(object):
 
     __slots__: Tuple[str, ...] = ()
 
-    def __repr__(self) -> str:
-        return '<Object>'
 
-
+@simple_repr
 class IDable(Object):
     """Represents a Tixte :class:`~tixte.abc.Object` with an ID.
     This implements common comparison and hashing methods.
@@ -73,6 +73,3 @@ class IDable(Object):
 
     def __hash__(self) -> int:
         return hash(self.id)
-
-    def __repr__(self) -> str:
-        return '<IDable id={0.id!r}>'.format(self)

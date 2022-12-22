@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, Tuple
 
 from .abc import Object
+from .utils import simple_repr
 
 if TYPE_CHECKING:
     from .state import State
@@ -31,6 +32,7 @@ if TYPE_CHECKING:
 __all__: Tuple[str, ...] = ('DeleteResponse',)
 
 
+@simple_repr
 class DeleteResponse(Object):
     """Represents the response from Tixte when deleting a file.
 
@@ -48,6 +50,3 @@ class DeleteResponse(Object):
         self._state: State = state
         self.message: str = data['message']
         self.extra: Dict[str, str] = data
-
-    def __repr__(self) -> str:
-        return '<DeleteResponse message={0.message!r}>'.format(self)

@@ -27,7 +27,7 @@ from .abc import IDable
 from .delete import DeleteResponse
 from .enums import Region, UploadPermissionLevel
 from .permissions import Permissions
-from .utils import parse_time
+from .utils import parse_time, simple_repr
 
 if TYPE_CHECKING:
     import datetime
@@ -39,6 +39,7 @@ if TYPE_CHECKING:
 __all__: Tuple[str, ...] = ('PartialUpload', 'Upload')
 
 
+@simple_repr
 class PartialUpload(IDable):
     """Represents a Partial Uploaded File. This can be used to delete an upload
     with only it's ID.
@@ -76,9 +77,6 @@ class PartialUpload(IDable):
         self.id: str = id
         self.permissions: Permissions = Permissions(state=self._state, upload=self)
 
-    def __repr__(self) -> str:
-        return '<PartialUpload id={0.id}>'.format(self)
-
     async def delete(self) -> DeleteResponse:
         """|coro|
 
@@ -113,6 +111,7 @@ class PartialUpload(IDable):
         return Upload(state=self._state, data=data)
 
 
+@simple_repr
 class Upload(PartialUpload):
     """The class that represents the response from Tixte when uploading a file.
 
@@ -189,11 +188,6 @@ class Upload(PartialUpload):
         self.url: str = data.get('url') or f'https://{self.domain_url}/{self.name}.{self.extension}'
         self.direct_url: Optional[str] = data.get('direct_url')
         self.permission_level: UploadPermissionLevel = UploadPermissionLevel(data['permission_level'])
-
-    def __repr__(self) -> str:
-        return '<Upload id={0.id!r} filename={0.name!r} extension={0.extension!r} url={0.url!r} direct_url={0.direct_url!r}>'.format(
-            self
-        )
 
     @property
     def domain(self) -> Optional[Domain]:

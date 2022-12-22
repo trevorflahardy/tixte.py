@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING, Any, Dict, Mapping, Protocol, Tuple, Type
 from typing_extensions import Self
 
 from .abc import Object
+from .utils import simple_repr
 
 if TYPE_CHECKING:
     from .state import State
@@ -39,6 +40,7 @@ class EmbedProtocol(Protocol):
         ...
 
 
+@simple_repr
 class Config(Object):
     """
     The base Config class you gget when using get_config.
@@ -90,11 +92,6 @@ class Config(Object):
         self.hide_branding: bool = data['hide_branding']
         self.base_redirect: bool = data['base_redirect']
         self._embed: Dict[Any, Any] = data['embed']
-
-    def __repr__(self) -> str:
-        return '<Config custom_css={0.custom_css!r} hide_branding={0.hide_branding!r} base_redirect={0.base_redirect!r}>'.format(
-            self
-        )
 
     def __eq__(self, __o: object) -> bool:
         if not isinstance(__o, self.__class__):

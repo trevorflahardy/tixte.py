@@ -24,11 +24,12 @@ SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Any, Callable, Dict, Tuple, TypeVar
+from typing import Any, Callable, Dict, Iterable, Optional, Tuple, Type, TypeVar
 
 T = TypeVar('T')
+ObjT = TypeVar('ObjT', bound='object')
 
-__all__: Tuple[str, ...] = ('to_json',)
+__all__: Tuple[str, ...] = ('parse_time',)
 
 
 try:
@@ -91,3 +92,31 @@ def copy_doc(copy_from: Any) -> Callable[[T], T]:
         return copy_to
 
     return wrapped
+
+
+def simple_repr(cls: Type[ObjT]) -> Type[ObjT]:
+    """Creates a simple repr for the given class.
+
+    .. code-block:: python3
+
+        @simple_repr
+        class MyObject:
+            __slots__ = ('id', 'name')
+
+    Parameters
+    ----------
+    *attrs: :class:`str`
+        The attributes to include in the repr.
+    """
+    cls_slots: Optional[Iterable[str]] = getattr(cls, '__slots__', None)
+
+    def __repr__(self: ObjT) -> str:
+        if not cls_slots:
+            return f'<{cls.__name__}>'
+
+        return f'<{cls.__name__} {" ".join(f"{attr}={getattr(self, attr)!r}" for attr in cls_slots if not attr.startswith("_"))}>'
+
+    # Pyright fails to understand that __repr__ with "self: ObjT" is a valid __repr__.
+    cls.__repr__ = __repr__  # type: ignore
+
+    return cls

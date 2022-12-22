@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 from .abc import IDable
 from .enums import Premium, Region
 from .file import File
-from .utils import parse_time
+from .utils import parse_time, simple_repr
 
 if TYPE_CHECKING:
     from .state import State
@@ -38,6 +38,7 @@ __all__: Tuple[str, ...] = (
 )
 
 
+@simple_repr
 class User(IDable):
     """This class holds all attributes and methods that are unique to users.
 
@@ -94,11 +95,6 @@ class User(IDable):
     def __str__(self) -> str:
         return self.username
 
-    def __repr__(self) -> str:
-        return '<User id={0.id} username={0.username} avatar={0.avatar} pro={0.pro} beta={0.beta} admin={0.admin} staff={0.staff}>'.format(
-            self
-        )
-
     async def save_avatar(self, *, filename: str) -> Optional[File]:
         """|coro|
 
@@ -116,6 +112,7 @@ class User(IDable):
         return await self._state.http.url_to_file(url=self.avatar, filename=filename)
 
 
+@simple_repr
 class ClientUser(User):
     """
     The Clent's User profile. This contains metadata specific to the user,
@@ -169,7 +166,7 @@ class ClientUser(User):
         'upload_region',
         '_last_login',
         'premium_tier',
-    )
+    ) + User.__slots__
 
     def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
         super().__init__(state=state, data=data)
@@ -181,11 +178,6 @@ class ClientUser(User):
         self.phone: Optional[Any] = data['phone']
         self.upload_region: Region = Region(data['upload_region'])
         self._last_login = data['last_login']
-
-    def __repr__(self) -> str:
-        return '<ClientUser id={0.id!r} username={0.username!r} avatar={0.avatar!r} pro={0.pro!r} beta={0.beta!r} admin={0.admin!r} staff={0.staff!r} email={0.email!r} email_verified={0.email_verified!r} phone={0.phone!r} upload_region={0.upload_region!r} mfa_enabled={0.mfa_enabled!r}>'.format(
-            self
-        )
 
     @property
     def last_login(self) -> datetime.datetime:
