@@ -110,8 +110,22 @@ class Client(Object):
     async def __aexit__(self, *args: Any) -> None:
         await self.cleanup()
 
-    # Internal helpers for dispatching
+    @property
+    def user(self) -> Optional[ClientUser]:
+        """Optional[:class:`ClientUser`]: The client's user, if in the internal cache."""
+        return self._state.client_user
 
+    @property
+    def users(self) -> List[User]:
+        """List[:class:`User`]: A list of all users within the internal cache."""
+        return list(self._state.users.values())
+
+    @property
+    def domains(self) -> List[Domain]:
+        """List[:class:`Domain`]: A list of all domains within the internal cache."""
+        return list(self._state.domains.values())
+
+    # Internal helper for dispatching
     def dispatch(self, event: str, *args: Any, **kwargs: Any) -> List[asyncio.Task[Any]]:
         event_fmt = 'on_' + event
         tasks: List[asyncio.Task[Any]] = []
@@ -183,21 +197,6 @@ class Client(Object):
                 listeners.remove(callback)
             except ValueError:
                 pass
-
-    @property
-    def user(self) -> Optional[ClientUser]:
-        """Optional[:class:`ClientUser`]: The client's user, if in the internal cache."""
-        return self._state.client_user
-
-    @property
-    def users(self) -> List[User]:
-        """List[:class:`User`]: A list of all users within the internal cache."""
-        return list(self._state.users.values())
-
-    @property
-    def domains(self) -> List[Domain]:
-        """List[:class:`Domain`]: A list of all domains within the internal cache."""
-        return list(self._state.domains.values())
 
     async def cleanup(self) -> None:
         """|coro|
