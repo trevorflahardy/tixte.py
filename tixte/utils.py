@@ -116,7 +116,6 @@ def simple_repr(cls: Type[ObjT]) -> Type[ObjT]:
 
         return f'<{cls.__name__} {" ".join(f"{attr}={getattr(self, attr)!r}" for attr in cls_slots if not attr.startswith("_"))}>'
 
-    # Pyright fails to understand that __repr__ with "self: ObjT" is a valid __repr__.
-    cls.__repr__ = __repr__  # type: ignore
+    setattr(cls, '__repr__', __repr__)
 
     return cls
