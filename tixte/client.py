@@ -102,7 +102,7 @@ class Client(Object):
         )
 
         self._state: State = State(dispatch=self.dispatch, http=self._http)
-        self._state._get_client = lambda: self  # type: ignore
+        self._state._get_client = lambda: self  
 
         self._listeners: Dict[str, List[Callable[..., Any]]] = {}
         self.fetch_client_user_on_start: bool = fetch_client_user_on_start

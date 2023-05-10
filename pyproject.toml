@@ -12,9 +12,10 @@ addopts = "--import-mode=importlib"
 
 [tool.pyright]
 typeCheckingMode = "strict"
-reportUnnecessaryTypeIgnoreComment = "warning"
+reportUnnecessaryTypeIgnoreComment = "error"
 reportUnusedImport = "error"
-pythonVersion = "3.8"
+pythonVersion = "3.10"
+reportPrivateUsage = "none"
 exclude = [
     "**/__pycache__",
     "build",
