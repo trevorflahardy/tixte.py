@@ -1,7 +1,7 @@
-# tixte.py
 [![Documentation Status](https://readthedocs.org/projects/tixtepy/badge/?version=latest)](https://tixtepy.readthedocs.io/en/latest/?badge=latest)
 
-The async wrapper for the Tixte API.
+![Banner_Thin](https://github.com/NextChai/tixte.py/assets/75498301/c55cbe5f-bd79-4131-86ba-9386b541678c)
+
 
 ```python
 import asyncio
@@ -10,28 +10,24 @@ import tixte
 async def main():
     client = tixte.Client('your-master-token', 'your-domain')
     file = tixte.File('this_image.png')
-
-    upload = await client.upload(file)  # Upload file
-    print(f'Uploaded file {upload.url} - {upload.filename}')
-
-    # Delete the file now
-    response = await upload.delete()
-    print(f'Deleted file: {response.message}')
-
+    
+    async with client:
+        upload = await client.upload(file)  # Upload file
+        print(f'Uploaded file {upload.url} - {upload.filename}')
 
 asyncio.run(main())
 ```
 
 # Installing
-Recommended Python 3.5.3 or higher
+Recommended Python 3.8.0 or higher
 
 To install the library you can do the following
 ```
 # Linux / MacOS
-python -m pip install tixte
+python -m pip install tixte.py
 
 # Windows
-py -m pip install tixte
+py -m pip install tixte.py
 ```
 
 ## Installing Master Branch
@@ -39,7 +35,7 @@ py -m pip install tixte
 python -m pip install git+https://github.com/NextChai/tixte.py
 ```
 
-# Getting a Master Token
+# Obtaining Your Master Token
 A master token is a token given by Tixte to allow applications
 to access and make requests to the API. It can be obtained by:
 
