@@ -1,4 +1,4 @@
-[![Documentation Status](https://readthedocs.org/projects/tixtepy/badge/?version=latest)](https://tixtepy.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/tixtepy/badge/?version=latest)](https://tixtepy.readthedocs.io/en/latest/?badge=latest) [![PyPI version](https://badge.fury.io/py/tixte.py.svg)](https://badge.fury.io/py/tixte.py)
 
 ![Banner_Thin](https://github.com/NextChai/tixte.py/assets/75498301/c55cbe5f-bd79-4131-86ba-9386b541678c)
 
