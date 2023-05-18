@@ -136,7 +136,7 @@ class Upload(IDable):
 
     Attributes
     ----------
-    id: Optional[:class:`str`]
+    id: :class:`str`
         The ID of the file.
     name: :class:`str`
         The name of the file.
