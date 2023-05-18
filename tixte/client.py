@@ -31,7 +31,6 @@ from typing import (
     List,
     Literal,
     Optional,
-    Set,
     Tuple,
     TypeVar,
     Union,
@@ -127,8 +126,8 @@ class Client(Object):
         self._state: State = State(http=self._http)
         self._state._get_client = lambda: self
 
-        self._listeners: Dict[str, Set[Callable[..., Any]]] = {}
-        self._waiters: Dict[str, Set[Tuple[asyncio.Future[Any], Optional[Callable[[Any], Optional[bool]]]]]] = {}
+        self._listeners: Dict[str, List[Callable[..., Any]]] = {}
+        self._waiters: Dict[str, List[Tuple[asyncio.Future[Any], Optional[Callable[[Any], Optional[bool]]]]]] = {}
 
         self.fetch_client_user_on_start: bool = fetch_client_user_on_start
 
@@ -226,13 +225,13 @@ class Client(Object):
             if not event_name.startswith('on_'):
                 raise ValueError('event name must start with \'on_\'')
 
-            self._listeners.setdefault(event_name, set()).add(func)
+            self._listeners.setdefault(event_name, []).append(func)
 
             return func
 
         return wrapped
 
-    def get_listeners(self, event: str) -> Set[EventCoro[..., Any]]:
+    def get_listeners(self, event: str) -> List[EventCoro[..., Any]]:
         """Retrieve all listeners that fall under the given event name.
 
         Parameters
@@ -246,7 +245,7 @@ class Client(Object):
             A list of all listeners for the event. If the listener is of type :class:`asyncio.Future`,
             it was spawned from :meth:`wait_for`.
         """
-        return self._listeners.get(event, set())
+        return self._listeners.get(event, [])
 
     def remove_listener(self, event: str, *, callback: Optional[EventCoro[P, T]] = None) -> None:
         """Removes a listener from the client via the event name and callback.
@@ -326,8 +325,8 @@ class Client(Object):
 
         future = loop.create_future()
 
-        waiters = self._waiters.setdefault(event, set())
-        waiters.add((future, check))
+        waiters = self._waiters.setdefault(f'on_{event}', [])
+        waiters.append((future, check))
 
         return await asyncio.wait_for(
             future,

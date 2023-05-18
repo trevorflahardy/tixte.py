@@ -97,14 +97,23 @@ async def test_event_dispatching() -> None:
 async def test_wait_for() -> None:
     client = tixte.Client(TIXTE_MASTER_KEY, TIXTE_MASTER_DOMAIN)
 
-    task: asyncio.Task[int] = asyncio.create_task(
-        client.wait_for('test', check=lambda parameter: parameter == 1, timeout=10)
-    )
+    async def _wrapped_wait_for():
+        def check(parameter: int) -> bool:
+            assert parameter == 1
+            return True
+
+        return await client.wait_for('test', check=check, timeout=10)
+
+    task: asyncio.Task[int] = asyncio.create_task(_wrapped_wait_for())
+
+    await asyncio.sleep(0.5)  # Wait for the task to spin up
 
     client.dispatch('test', 1)
 
     await task
     assert task.result() == 1
+
+    assert client._waiters == {'on_test': []}
 
 
 # TODO: Add testing for private uploads, upload permission management (viewing access), deleting uploads, and more.
