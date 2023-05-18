@@ -113,10 +113,8 @@ class PartialUpload(IDable):
 
 
 @simple_repr
-class Upload(PartialUpload):
+class Upload(IDable):
     """The class that represents the response from Tixte when uploading a file.
-
-    This inherits :class:`PartialUpload`.
 
     .. container:: operations
 
@@ -138,12 +136,13 @@ class Upload(PartialUpload):
 
     Attributes
     ----------
-    id: :class:`str`
+    id: Optional[:class:`str`]
         The ID of the file.
     name: :class:`str`
         The name of the file.
-    filename: :class:`str`
+    filename: Optiona;[:class:`str`]
         The filename of the file. This is the combined name and extension of the file.
+        Can be ``None`` if the file was uploaded via the search uploads endpoint.
     extension: :class:`str`
         The file extension. For example ``.png`` or ``.jpg``.
     url: :class:`str`
@@ -169,12 +168,13 @@ class Upload(PartialUpload):
         'permissions',
         'type',
         'filename',
+        'uploaded_at',
     )
 
     def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
         self._state: State = state
 
-        self.id: str = data['id']
+        self.id: str = data.get('id', data['asset_id'])
         self.name: str = data['name']
         self.region: Optional[Region] = Region(region) if (region := data.get('region')) else None
         self.permissions: Permissions = Permissions(
@@ -182,12 +182,13 @@ class Upload(PartialUpload):
         )
         self.domain_url: str = data['domain']
         self.type: UploadType = UploadType(data['type'])
-        self.filename: str = data['filename']
+        self.filename: Optional[str] = data.get('filename')
 
-        self.expiration: Optional[datetime.datetime] = (expiration := data['expiration']) and parse_time(expiration)
+        self.expiration: Optional[datetime.datetime] = (expiration := data.get('expiration')) and parse_time(expiration)
         self.extension: str = data['extension']
         self.url: str = data.get('url') or f'https://{self.domain_url}/{self.name}.{self.extension}'
         self.direct_url: Optional[str] = data.get('direct_url')
+        self.uploaded_at: datetime.datetime = parse_time(data['uploaded_at'])
 
     @property
     def domain(self) -> Optional[Domain]:
