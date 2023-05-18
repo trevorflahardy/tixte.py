@@ -23,7 +23,7 @@ from __future__ import annotations
 
 from typing import NamedTuple
 
-__version__ = '0.0.6'
+__version__ = '0.7.0'
 __author__ = 'NextChai'
 __license__ = 'MIT'
 __copyright__ = 'Copyright (c) 2021-present NextChai'
