@@ -61,8 +61,8 @@ class Client(Object):
         .. describe:: async with x
 
             Enters the client as a context manager. This will automatically
-            cleanup the aiohttp Client Session when the context is exited. Optionally,
-            you can manage the session yourself and pass it to the client. Regardless
+            cleanup the :class:`aiohttp.ClientSession` when the context is exited. Optionally,
+            you can manage the :class:`aiohttp.ClientSession` yourself and pass it to the client. Regardless
             of which you do, the client will always close the session when the context is exited.
 
     .. code-block:: python3
