@@ -47,7 +47,7 @@ from typing_extensions import TypeAlias
 from . import __version__
 from .errors import *
 from .file import File
-from .utils import to_json
+from .utils import to_json, to_string
 
 if TYPE_CHECKING:
     from .domain import Domain
@@ -150,22 +150,30 @@ class HTTP:
         headers = {
             'User-Agent': self.user_agent,
             'Authorization': self.master_key,
-            'Content-Type': 'application/json',
+            #'Content-Type': 'application/json',
         }
         kwargs['headers'] = headers
 
+        # Check for JSON data
+        if 'json' in kwargs:
+            kwargs['data'] = to_string(kwargs.pop('json'))
+
         if files is not None:
             data = aiohttp.FormData()
+
+            # Need to append the JSON data to the given form data
+            if 'data' in kwargs:
+                data.add_field('payload_json', kwargs.pop('data'))
+                log.debug('Added payload_json to form data')
+
             for index, file in enumerate(files):
                 data.add_field(
-                    f'file{index}',
-                    file.fp,
+                    name=f'file[{index}]',
+                    value=file.fp,
                     filename=file.filename,
-                    content_type='application/octet-stream',
                 )
 
             kwargs['data'] = data
-            kwargs['headers']['Content-Type'] = 'application/octet-stream'
 
         response: Optional[aiohttp.ClientResponse] = None
         async with self.session_lock:
@@ -260,20 +268,19 @@ class HTTP:
                 raise HTTPException(response, 'failed to get asset')
 
     def upload(
-        self,
-        file: File,
-        *,
-        filename: Optional[str] = None,
-        domain: Optional[Union[Domain, str]] = None,
+        self, file: File, *, domain: Optional[Union[Domain, str]] = None, upload_type: int
     ) -> Response[Dict[Any, Any]]:
         r = Route('POST', '/upload')
 
-        params: Dict[str, Any] = {'domain': (domain and str(domain)) or self.domain}
+        data: Dict[str, Any] = {
+            'domain': (domain and str(domain)) or self.domain,
+            'type': upload_type,
+            "name": file.filename,
+            "upload_source": "dashboard",
+        }
+        log.debug(data)
 
-        if filename is not None:
-            params['name'] = filename
-
-        return self.request(r, files=[file], params=params)
+        return self.request(r, files=[file], json=data)
 
     def delete_upload(self, upload_id: str) -> Response[Dict[Any, Any]]:
         r = Route('DELETE', '/users/@me/uploads/{upload_id}', upload_id=upload_id)
@@ -392,7 +399,7 @@ class HTTP:
         return self.request(r)
 
     def get_upload_key(self) -> Response[Dict[str, Any]]:
-        # {"success":true,"data":{"api_key":"17c597d8-ca46-4e03-a18d-7c9cfba8b9c4"}}
+        # {"success":true,"data":{"api_key":"..."}}
         r = Route('GET', '/users/@me/keys')
         return self.request(r)
 
@@ -453,7 +460,7 @@ class HTTP:
             data['privacy'] = privacy
 
         r = Route('PATCH', '/users/@me/settings')
-        return self.request(r, data=data)
+        return self.request(r, json=data)
 
     def request_data(self) -> Response[Dict[str, Any]]:
         r = Route('POST', '/users/@me/data-requests')
@@ -503,13 +510,13 @@ class HTTP:
             data['custom_css'] = custom_css
 
         r = Route('PATCH', '/users/@me/config')
-        return self.request(r, data=data)
+        return self.request(r, json=data)
 
     def get_total_upload_size(self) -> Response[Dict[Any, Any]]:
         r = Route('GET', '/users/@me/uploads/size')
         return self.request(r)
 
-    async def url_to_file(self, *, url: str, filename: str) -> File:
+    async def url_to_file(self, *, url: str, filename: Optional[str]) -> File:
         data = await self.get_from_url(url)
         bytes_io = io.BytesIO(data)
         return File(bytes_io, filename=filename)

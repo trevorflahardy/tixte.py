@@ -44,11 +44,17 @@ if _has_orjson:
 
     def to_json(string: str) -> Dict[Any, Any]:
         return orjson.loads(string)
+    
+    def to_string(data: Dict[Any, Any]) -> str:
+        return orjson.dumps(data).decode('utf-8')
 
 else:
 
     def to_json(string: str) -> Dict[Any, Any]:
         return json.loads(string)
+    
+    def to_string(data: Dict[Any, Any]) -> str:
+        return json.dumps(data)
 
 
 def parse_time(time_strp: str) -> datetime.datetime:

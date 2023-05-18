@@ -24,7 +24,7 @@ from __future__ import annotations
 import enum
 from typing import Tuple
 
-__all__: Tuple[str, ...] = ('Region', 'Premium', 'UploadPermissionLevel')
+__all__: Tuple[str, ...] = ('Region', 'Premium', 'UploadPermissionLevel', 'UploadType')
 
 
 class Region(enum.Enum):
@@ -41,3 +41,8 @@ class UploadPermissionLevel(enum.Enum):
     viewer = 1
     manager = 2
     owner = 3
+
+
+class UploadType(enum.Enum):
+    public = 1
+    private = 2

@@ -26,6 +26,8 @@ from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Optional
 
 from typing_extensions import ParamSpec, Self
 
+from tixte.enums import UploadType
+
 from .abc import Object
 from .config import Config
 from .errors import NotFound
@@ -102,7 +104,7 @@ class Client(Object):
         )
 
         self._state: State = State(dispatch=self.dispatch, http=self._http)
-        self._state._get_client = lambda: self  
+        self._state._get_client = lambda: self
 
         self._listeners: Dict[str, List[Callable[..., Any]]] = {}
         self.fetch_client_user_on_start: bool = fetch_client_user_on_start
@@ -302,7 +304,14 @@ class Client(Object):
         data = await self._http.get_user(id)
         return self._state.store_user(data)
 
-    async def upload(self, file: File, /, *, domain: Optional[Union[Domain, str]] = None) -> Upload:
+    async def upload(
+        self,
+        file: File,
+        /,
+        *,
+        domain: Optional[Union[Domain, str]] = None,
+        upload_type: UploadType = UploadType.public,
+    ) -> Upload:
         """|coro|
 
         Upload a file to Tixte.
@@ -313,6 +322,8 @@ class Client(Object):
             The file to upload. Please note :class:`discord.File` objects work as well.
         domain: Optional[Union[:class:`Domain`, :class:`str`]]
             Optionally, upload to a different domain than the client's default.
+        upload_type: :class:`UploadType`
+            Which type of upload to use. This can be either ``public`` or ``private``.
 
         Returns
         -------
@@ -326,7 +337,7 @@ class Client(Object):
         HTTPException
             An HTTP exception has occurred.
         """
-        data = await self._http.upload(file, filename=file.filename, domain=domain)
+        data = await self._http.upload(file, domain=domain, upload_type=upload_type.value)
         return Upload(state=self._state, data=data)
 
     async def url_to_file(self, url: str, /, *, filename: Optional[str] = None) -> File:
@@ -340,15 +351,15 @@ class Client(Object):
         url: :class:`str`
             The URL to convert.
         filename: Optional[:class:`str`]
-            The filename to use for the file. If not provided, ``attachment1`` will be used
-            instead.
+            The filename to use for the file. Note that this must include the extension, such as
+            ``some_file.png``. If this is ``None``, tixte will assume this to be a ``bin`` file.
 
         Returns
         -------
         :class:`File`
             The file with the given URL.
         """
-        return await self._http.url_to_file(url=url, filename=filename or 'attachment1')
+        return await self._http.url_to_file(url=url, filename=filename)
 
     async def fetch_client_user(self) -> ClientUser:
         """|coro|

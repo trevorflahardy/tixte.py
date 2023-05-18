@@ -36,14 +36,15 @@ __all__: Tuple[str, ...] = ('File',)
 class File(Object):
     r"""An object used to represent a file that can be used to upload an image.
 
-    Internally, this object exactly the same as :class:`discord.File`.
-
     Parameters
     ----------
     fp: Union[:class:`os.PathLike`, :class:`io.BufferedIOBase`]
         A file-like object, or file path, or file-like buffer.
     filename: Optional[:class:`str`]
         The filename of the file. If not provided, the filename will be the
+        resolved value of ``fp`` if it's a file-like object. Note if
+        the filename can not be found then ``ValueError`` is raised. This is due
+        to the fact that the filename is needed to upload.
 
     Attributes
     -----------
@@ -92,11 +93,13 @@ class File(Object):
 
         if filename is None:
             if isinstance(fp, str):
-                _, self.filename = os.path.split(fp)
+                _, filename = os.path.split(fp)
             else:
-                self.filename = getattr(fp, 'name', None)
+                filename = getattr(fp, 'name', None)
         else:
-            self.filename = filename
+            filename = filename
+
+        self.filename: Optional[str] = filename
 
     def reset(self, *, seek: Union[int, bool] = True) -> None:
         # The `seek` parameter is needed because

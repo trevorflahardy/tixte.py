@@ -49,7 +49,7 @@ def _parse_permissions(state: State, parser: Optional[List[Dict[str, Any]]]) -> 
     data: Dict[User, UploadPermissionLevel] = {}
 
     for entry in parser:
-        data[state.store_user(entry['user'])] = UploadPermissionLevel(entry['permission_level'])
+        data[state.store_user(entry['user'])] = UploadPermissionLevel(entry['access_level'])
 
     return data
 

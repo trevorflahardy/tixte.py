@@ -21,11 +21,7 @@ extras_require = {
         'sphinxcontrib-websupport',
         'typing-extensions',
     ],
-    'test': [
-        'pytest',
-        'pytest-asyncio',
-        'pytest-cov',
-    ],
+    'test': ['pytest', 'pytest-asyncio', 'pytest-cov', 'async-timeout'],
     'speed': [
         'orjson',
     ],

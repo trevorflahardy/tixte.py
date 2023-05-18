@@ -168,6 +168,22 @@ UploadPermissionLevel
         
         The owner of this upload. Can manage everything.
 
+UploadType
+~~~~~~~~~~~~~~
+
+.. class:: UploadType
+
+    Represents the type of file being uploaded.
+
+    .. attribute:: public
+
+        A public file. Anyone can view this file.
+    
+    .. attribute:: private
+
+        A private file. Only the owner can view this file.
+        
+
 .. _tixte-api-utils:
 
 Utility Functions
