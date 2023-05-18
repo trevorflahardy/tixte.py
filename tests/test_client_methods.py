@@ -1,8 +1,9 @@
+import asyncio
 import os
 
 import aiohttp
-import asyncio
 import pytest
+
 import tixte
 
 try:

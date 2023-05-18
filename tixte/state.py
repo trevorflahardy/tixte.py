@@ -37,7 +37,6 @@ __all__: Tuple[str, ...] = ('State',)
 
 
 class State(Object):
-
     __slots__: Tuple[str, ...] = (
         'dispatch',
         'http',
