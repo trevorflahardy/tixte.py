@@ -49,4 +49,4 @@ class VersionInfo(NamedTuple):
     serial: int
 
 
-version_info = VersionInfo(0, 0, 6, 'final', 0)
+version_info = VersionInfo(1, 0, 2, 'final', 0)
