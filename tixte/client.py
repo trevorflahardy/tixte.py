@@ -61,8 +61,9 @@ class Client(Object):
         .. describe:: async with x
 
             Enters the client as a context manager. This will automatically
-            cleanup the :attr:`~session` when the context is exited. Optionally,
-            you can manage the :attr:`~session` yourself and pass it to the client.
+            cleanup the :class:`aio.ClientSession` when the context is exited. Optionally,
+            you can manage the :class:`aio.ClientSession` yourself and pass it to the client. Regardless
+            of which you do, the client will always close the session when the context is exited.
 
     .. code-block:: python3
 
@@ -85,6 +86,12 @@ class Client(Object):
         Whether to fetch the client's user on startup. This means the :attr:`user` method will be :class:`ClientUser`
         100% of the time. Defaults to ``False``. Please note this is only valid if you are using the client
         within a context manager setting. Otherwise, no user will be fetched.
+
+    Attributes
+    ----------
+    fetch_client_user_on_start: :class:`bool`
+        Whether to fetch the client's user on startup. This means the :meth:`fetch_client_user`
+        method will be called upon entering the client as a context manager. Defaults to ``False``.
     """
 
     def __init__(
