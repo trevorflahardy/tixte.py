@@ -1,6 +1,7 @@
-from typing import Any
+from typing import Any, Optional
 
 import discord
+from discord import app_commands
 
 import tixte
 
@@ -12,16 +13,19 @@ class MyClient(discord.Client):
 
 
 client = MyClient(intents=discord.Intents.all())
+tree = app_commands.CommandTree(client=client)
 
 
-@client.event
-async def on_member_join(member: discord.Member) -> None:
-    if member.id != 146348630926819328:  # Specific user
-        return
+@tree.command()
+async def avatar(interaction: discord.Interaction, person: Optional[discord.Member] = None) -> None:
+    await interaction.response.defer(ephemeral=True)
 
-    file = discord.File('my_image.png')
-    upload = await client.tixte.upload_image(file=file)
-    await member.send(upload.url)
+    target = person or interaction.user
+
+    file = await client.tixte.url_to_file(target.display_avatar.url, filename='avatar.png')
+    upload = await client.tixte.upload(file)
+
+    await interaction.followup.send(f'Avatar: {upload}')
 
 
 client.run('token')
