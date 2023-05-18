@@ -1,0 +1,98 @@
+name: checks
+
+on: 
+  push:
+  pull_request:
+    types: [ opened, reopened, synchronize ]
+
+jobs:
+  black:
+    name: Black Formatting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python 3.8
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.8"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel black
+          pip install -U -r requirements.txt
+          pip install -e .
+
+      - name: Black Formatting Check 
+        shell: bash
+        run: |
+          python -m black --check --verbose tixte
+
+  dists-and-docs:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ '3.8' ]
+
+    name: dists & docs (${{ matrix.python-version }}/${{ matrix.language }})
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up CPython ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -U -r requirements.txt
+      - name: Build distributions
+        run: |
+          python ./setup.py sdist bdist_wheel
+
+      - name: Install package
+        run: |
+          pip install -e .[docs,test,speed]
+      - name: Build docs
+        shell: bash
+        run: |
+          cd docs
+          sphinx-build -b html -a -n -T -W --keep-going . _build/html
+
+  pytest:
+    name: pytest
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python 3.8
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.8"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel "coverage[toml]" pytest pytest-asyncio pytest-cov black
+          pip install -U -r requirements.txt
+          pip install -e .
+      
+      - name: Run Pytest Checks
+        env:
+          TIXTE_MASTER_TOKEN: ${{ secrets.TIXTE_MASTER_TOKEN }}
+          TIXTE_MASTER_DOMAIN: ${{ secrets.TIXTE_MASTER_DOMAIN }}
+          TIXTE_ACCOUNT_EMAIL: ${{ secrets.TIXTE_ACCOUNT_EMAIL }}
+        shell: bash
+        run: |
+          python -m pytest --cov=tixte --import-mode=importlib -vs tests/
