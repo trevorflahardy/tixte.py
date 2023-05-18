@@ -22,7 +22,9 @@ except KeyError as exc:
     raise Exception('TIXTE_ACCOUNT_EMAIL environment variable not set') from exc
 
 TIXTE_ACCOUNT_ID: str = '89b1c121b4f24b22aa8607748981c34a'
-TIXTE_TESTING_URL: str = 'https://imgur.com/a/TKpgn1w'
+TIXTE_TESTING_URL: str = (
+    'https://cdn.discordapp.com/attachments/813293906467880961/1108797596996222986/830954810793525258.png'
+)
 TIXTE_TESTING_DOMAIN: str = 'tixte-testing.tixte.co'
 TIXTE_OTHER_USER: str = '71dc9871ca28446c8baffbd74430f2ad'
 TIXTE_TESTING_UPLOAD_NAME: str = 'xqc.png'
@@ -44,8 +46,6 @@ async def test_fetch_user() -> None:
     client = tixte.Client(TIXTE_MASTER_KEY, TIXTE_MASTER_DOMAIN)
     async with client:
         user = await client.fetch_user(TIXTE_ACCOUNT_ID)
-
-        await client.cleanup()
 
         assert user.id == TIXTE_ACCOUNT_ID
         assert user.username == 'TTesting'
