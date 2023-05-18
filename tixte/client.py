@@ -92,6 +92,7 @@ class Client(Object):
     domain: :class:`str`
         The domain you want to upload to.
         If you haven't already, you need to create a domain at `the tixte domain dashboard <https://tixte.com/dashboard/domains>`_.
+        Note you should not include ``https://`` in your domain, just the domain itself. An example of this would be ``test.tixte.co``.
     session: Optional[:class:`aiohttp.ClientSession`]
         An optional session to pass for HTTP requests. If not provided, a new session will be created
         for you.
