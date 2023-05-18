@@ -21,15 +21,13 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple
 
 from .abc import Object
 from .domain import Domain
 from .user import ClientUser, User
 
 if TYPE_CHECKING:
-    from asyncio import Task
-
     from .client import Client
     from .http import HTTP
 
@@ -51,10 +49,8 @@ class State(Object):
 
     def __init__(
         self,
-        dispatch: Callable[..., List[Task[Any]]],
         http: HTTP,
     ) -> None:
-        self.dispatch: Callable[..., List[Task[Any]]] = dispatch
         self.http: HTTP = http
 
         self._reload()

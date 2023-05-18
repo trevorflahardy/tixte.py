@@ -110,13 +110,13 @@ class HTTP:
         *,
         master_key: str,
         domain: str,
-        dispatch: Callable[..., List[asyncio.Task[Any]]],
+        dispatch: Callable[..., None],
         session: Optional[aiohttp.ClientSession] = None,
     ) -> None:
         self.master_key: str = master_key
         self.domain: str = domain
 
-        self.dispatch: Callable[..., List[asyncio.Task[Any]]] = dispatch
+        self.dispatch: Callable[..., None] = dispatch
 
         self.session: Optional[aiohttp.ClientSession] = session
         self.session_lock: asyncio.Lock = asyncio.Lock()

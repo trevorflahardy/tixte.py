@@ -29,7 +29,7 @@ from typing import Any, Callable, Dict, Iterable, Optional, Tuple, Type, TypeVar
 T = TypeVar('T')
 ObjT = TypeVar('ObjT', bound='object')
 
-__all__: Tuple[str, ...] = ('parse_time',)
+__all__: Tuple[str, ...] = ('parse_time', 'to_json', 'to_string', 'copy_doc', 'simple_repr')
 
 
 try:

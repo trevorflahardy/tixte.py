@@ -22,7 +22,21 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, List, Optional, Tuple, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Coroutine,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+    overload,
+)
 
 from typing_extensions import ParamSpec, Self
 
@@ -110,10 +124,12 @@ class Client(Object):
             dispatch=self.dispatch,
         )
 
-        self._state: State = State(dispatch=self.dispatch, http=self._http)
+        self._state: State = State(http=self._http)
         self._state._get_client = lambda: self
 
-        self._listeners: Dict[str, List[Callable[..., Any]]] = {}
+        self._listeners: Dict[str, Set[Callable[..., Any]]] = {}
+        self._waiters: Dict[str, Set[Tuple[asyncio.Future[Any], Optional[Callable[[Any], Optional[bool]]]]]] = {}
+
         self.fetch_client_user_on_start: bool = fetch_client_user_on_start
 
     async def __aenter__(self) -> Self:
@@ -144,26 +160,40 @@ class Client(Object):
         return list(self._state.domains.values())
 
     # Internal helper for dispatching
-    def dispatch(self, event: str, *args: Any, **kwargs: Any) -> List[asyncio.Task[Any]]:
+    def dispatch(self, event: str, *args: Any, **kwargs: Any) -> None:
         event_fmt = 'on_' + event
-        tasks: List[asyncio.Task[Any]] = []
-
         method = getattr(self, event_fmt, None)
         if method:
-            tasks.append(
-                asyncio.create_task(
-                    method(*args, **kwargs),
-                    name=f'tixte-dispatcher-{event_fmt}',
-                )
+            asyncio.create_task(
+                method(*args, **kwargs),
+                name=f'tixte-dispatcher-{event_fmt}',
             )
 
         callables = self._listeners.get(event_fmt, [])
-        for item in callables:
-            tasks.append(asyncio.create_task(item(*args, **kwargs), name=f'tixte-dispatcher-{event_fmt}'))
+        if callables:
+            for item in callables:
+                asyncio.create_task(item(*args, **kwargs), name=f'tixte-dispatcher-{event_fmt}')
 
-        return tasks
+        waiters = self._waiters.get(event_fmt, [])
+        if waiters:
+            for future, condition in waiters:
+                result = None
+                if condition is not None:
+                    result = condition(*args, **kwargs)
 
-    def event(self, event: Optional[str] = None) -> Callable[[EventCoro[P, T]], EventCoro[P, T]]:
+                if not result:
+                    continue
+
+                if future.done():
+                    continue
+
+                # Any waiters can not accept kwargs, so we will ignore them. There are
+                # also no waiters that *should* accept kwargs at this moment.
+                future.set_result(*args)
+
+                waiters.remove((future, condition))
+
+    def listen(self, event: Optional[str] = None) -> Callable[[EventCoro[P, T]], EventCoro[P, T]]:
         """A decorator that registers an event to listen for. This is used to register
         an event to listen for. The name of the coroutine will be used as the event name
         unless otherwise specified.
@@ -196,11 +226,27 @@ class Client(Object):
             if not event_name.startswith('on_'):
                 raise ValueError('event name must start with \'on_\'')
 
-            self._listeners.setdefault(event_name, []).append(func)
+            self._listeners.setdefault(event_name, set()).add(func)
 
             return func
 
         return wrapped
+
+    def get_listeners(self, event: str) -> Set[EventCoro[..., Any]]:
+        """Retrieve all listeners that fall under the given event name.
+
+        Parameters
+        ----------
+        event: :class:`str`
+            The event to retrieve listeners for.
+
+        Returns
+        -------
+        List[Union[Callable, :class:`asyncio.Future`]]
+            A list of all listeners for the event. If the listener is of type :class:`asyncio.Future`,
+            it was spawned from :meth:`wait_for`.
+        """
+        return self._listeners.get(event, set())
 
     def remove_listener(self, event: str, *, callback: Optional[EventCoro[P, T]] = None) -> None:
         """Removes a listener from the client via the event name and callback.
@@ -224,6 +270,69 @@ class Client(Object):
                 listeners.remove(callback)
             except ValueError:
                 pass
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['request'],
+        check: Optional[Callable[[aiohttp.ClientResponse], Optional[bool]]] = None,
+        timeout: Optional[float] = None,
+    ) -> aiohttp.ClientResponse:
+        ...
+
+    @overload
+    async def wait_for(
+        self, event: str, check: Optional[Callable[..., Optional[bool]]] = ..., timeout: Optional[float] = None
+    ) -> Any:
+        ...
+
+    async def wait_for(
+        self, event: str, check: Optional[Callable[..., Optional[bool]]] = None, timeout: Optional[float] = None
+    ) -> Any:
+        """|coro|
+
+        Wait for a specific event to be dispatched, optionally checking for a condition
+        to be met.
+
+        This method returns a :class:`asyncio.Future` that you can await on. Note that if the event dispatched
+        has kwargs, they will be passed to the check but not to the :class:`asyncio.Future` result.
+
+        .. code-block:: python3
+
+            def check(response: aiohttp.ClientResponse) -> bool:
+                return response.status == 200
+
+            response = await client.wait_for('request', check=check)
+
+        Parameters
+        ----------
+        event: :class:`str`
+            The event to wait for. Note the event passed here should not be prefixed
+            with ``on_``, just the name of the event itself.
+        check: Optional[Callable[..., Optional[bool]]]
+            A predicate to check what to wait for. The arguments must match the parameters
+            passed to the event being waited for.
+        timeout: Optional[:class:`float`]
+            The number of seconds to wait before timing out and raising :exc:`asyncio.TimeoutError`.
+
+        Raises
+        ------
+        asyncio.TimeoutError
+            The event was not dispatched in time and ``timeout`` was provided.
+        RuntimeError
+            This method was called from an OS thread that has no running event loop.
+        """
+        loop = asyncio.get_running_loop()
+
+        future = loop.create_future()
+
+        waiters = self._waiters.setdefault(event, set())
+        waiters.add((future, check))
+
+        return await asyncio.wait_for(
+            future,
+            timeout=timeout,
+        )
 
     async def cleanup(self) -> None:
         """|coro|

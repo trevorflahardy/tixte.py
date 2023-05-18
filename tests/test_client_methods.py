@@ -1,7 +1,6 @@
 import asyncio
 import os
 
-import aiohttp
 import pytest
 
 import tixte
@@ -79,19 +78,33 @@ async def test_public_upload() -> None:
 async def test_event_dispatching() -> None:
     client = tixte.Client(TIXTE_MASTER_KEY, TIXTE_MASTER_DOMAIN)
 
-    request_response: asyncio.Future[aiohttp.ClientResponse] = asyncio.get_event_loop().create_future()
+    request_response: asyncio.Future[int] = asyncio.get_event_loop().create_future()
 
-    @client.event('on_request')
-    async def _on_client_request(response: aiohttp.ClientResponse) -> None:  # pyright: ignore[reportUnusedFunction]
-        request_response.set_result(response)
+    @client.listen('on_test')
+    async def _on_client_request(parameter: int) -> None:  # pyright: ignore[reportUnusedFunction]
+        request_response.set_result(parameter)
 
     async with client:
-        await client.fetch_user(TIXTE_ACCOUNT_ID)
+        client.dispatch('test', 1)
 
         import async_timeout
 
         async with async_timeout.timeout(10):
             await request_response
+
+
+@pytest.mark.asyncio
+async def test_wait_for() -> None:
+    client = tixte.Client(TIXTE_MASTER_KEY, TIXTE_MASTER_DOMAIN)
+
+    task: asyncio.Task[int] = asyncio.create_task(
+        client.wait_for('test', check=lambda parameter: parameter == 1, timeout=10)
+    )
+
+    client.dispatch('test', 1)
+
+    await task
+    assert task.result() == 1
 
 
 # TODO: Add testing for private uploads, upload permission management (viewing access), deleting uploads, and more.
