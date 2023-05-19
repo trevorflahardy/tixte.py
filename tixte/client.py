@@ -554,8 +554,8 @@ class Client(Object):
         HTTPException
             An HTTP exception has occurred.
         """
-        data = await self._http.search_uploads(query=upload_id, limit=1)
-        return Upload(state=self._state, data=data[0])
+        data = await self._http.get_upload(upload_id)
+        return Upload(state=self._state, data=data)
 
     async def fetch_uploads(self) -> List[Upload]:
         """|coro|

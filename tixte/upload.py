@@ -98,26 +98,25 @@ class PartialUpload(IDable):
         """
         return await self._state.http.delete_upload(self.id)
 
-    # NOTE: Tixte took this out of their API
-    # async def fetch(self) -> Upload:
-    #     """|coro|
-    #
-    #     Fetch the upload and return it.
-    #
-    #     Returns
-    #     -------
-    #     :class:`Upload`
-    #         The upload that was requested.
-    #
-    #     Raises
-    #     ------
-    #     Forbidden
-    #         You do not have permission to fetch this upload.
-    #     HTTPException
-    #         An HTTP exception has occurred.
-    #     """
-    #     data = await self._state.http.get_upload(self.id)
-    #     return Upload(state=self._state, data=data)
+    async def fetch(self) -> Upload:
+        """|coro|
+
+        Fetch the upload and return it.
+
+        Returns
+        -------
+        :class:`Upload`
+            The upload that was requested.
+
+        Raises
+        ------
+        Forbidden
+            You do not have permission to fetch this upload.
+        HTTPException
+            An HTTP exception has occurred.
+        """
+        data = await self._state.http.get_upload(self.id)
+        return Upload(state=self._state, data=data)
 
 
 @simple_repr
