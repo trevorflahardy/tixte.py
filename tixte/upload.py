@@ -21,10 +21,9 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple
 
 from .abc import IDable
-from .delete import DeleteResponse
 from .enums import Region, UploadType
 from .permissions import Permissions
 from .utils import parse_time, simple_repr
@@ -35,6 +34,8 @@ if TYPE_CHECKING:
     from .domain import Domain
     from .file import File
     from .state import State
+    from .types.upload import Upload as UploadPayload
+    from .types.base import Message as MessagePayload
 
 __all__: Tuple[str, ...] = ('PartialUpload', 'Upload')
 
@@ -77,18 +78,25 @@ class PartialUpload(IDable):
         self.id: str = id
         self.permissions: Permissions = Permissions(state=self._state, upload=self)
 
-    async def delete(self) -> DeleteResponse:
+    async def delete(self) -> MessagePayload:
         """|coro|
 
         Delete the file from Tixte.
 
         Returns
         -------
-        :class:`DeleteResponse`
-            The response from Tixte with the status of the deletion.
+        :class:`dict`
+            A dict containing one key, "message", that contains a status
+            message from Tixte. This is a curtousy message.
+
+        Raises
+        ------
+        NotFound
+            The upload was not found.
+        Forbidden
+            You do not have permission to delete this upload.
         """
-        data = await self._state.http.delete_upload(self.id)
-        return DeleteResponse(state=self._state, data=data)
+        return await self._state.http.delete_upload(self.id)
 
     # NOTE: Tixte took this out of their API
     # async def fetch(self) -> Upload:
@@ -171,10 +179,10 @@ class Upload(IDable):
         'uploaded_at',
     )
 
-    def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
+    def __init__(self, *, state: State, data: UploadPayload) -> None:
         self._state: State = state
 
-        self.id: str = data.get('id', data['asset_id'])
+        self.id: str = data.get('id') or data['asset_id']
         self.name: str = data['name']
         self.region: Optional[Region] = Region(region) if (region := data.get('region')) else None
         self.permissions: Permissions = Permissions(
@@ -184,11 +192,11 @@ class Upload(IDable):
         self.type: UploadType = UploadType(data['type'])
         self.filename: Optional[str] = data.get('filename')
 
-        self.expiration: Optional[datetime.datetime] = (expiration := data.get('expiration')) and parse_time(expiration)
+        self.expiration: Optional[datetime.datetime] = parse_time(data.get('expiration'))
         self.extension: str = data['extension']
         self.url: str = data.get('url') or f'https://{self.domain_url}/{self.name}.{self.extension}'
         self.direct_url: Optional[str] = data.get('direct_url')
-        self.uploaded_at: datetime.datetime = parse_time(data['uploaded_at'])
+        self.uploaded_at: Optional[datetime.datetime] = parse_time(data.get('uploaded_at'))
 
     @property
     def domain(self) -> Optional[Domain]:

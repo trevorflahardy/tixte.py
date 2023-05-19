@@ -20,32 +20,24 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
-
-from typing import NamedTuple
-
-__version__ = '1.0.2'
-__author__ = 'NextChai'
-__license__ = 'MIT'
-__copyright__ = 'Copyright (c) 2021-present NextChai'
-
-from . import abc as abc, utils as utils
-from .client import *
-from .config import *
-from .domain import *
-from .enums import *
-from .errors import *
-from .file import *
-from .permissions import *
-from .upload import *
-from .user import *
+from typing import Optional, TypedDict
 
 
-class VersionInfo(NamedTuple):
-    major: int
-    minor: int
-    micro: int
-    releaselevel: str
-    serial: int
+class PartialUser(TypedDict):
+    id: str
+    username: str
+    avatar: Optional[str]
 
 
-version_info = VersionInfo(1, 0, 2, 'final', 0)
+class User(PartialUser):
+    flags: int
+
+
+class ClientUser(User):
+    mfa_enabled: bool
+    premium_tier: int
+    upload_region: str
+    email: str
+    email_verified: bool
+    phone: Optional[str]
+    last_login: str

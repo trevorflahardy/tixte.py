@@ -21,12 +21,15 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Optional, Tuple, Union, TypedDict
 
 from .abc import Object
 
 if TYPE_CHECKING:
     from aiohttp import ClientResponse
+
+    from .types.error import Error as ErrorDict
+
 
 __all__: Tuple[str, ...] = (
     'TixteException',
@@ -63,22 +66,19 @@ class HTTPException(TixteException):
     def __init__(
         self,
         response: Optional[ClientResponse] = None,
-        data: Optional[Union[Dict[Any, Any], Any]] = None,
+        data: Optional[Union[ErrorDict, TypedDict, str]] = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
         self.response: Optional[ClientResponse] = response
         self.data: Any = data
 
-        self.message: Optional[str]
-        self.code: Optional[str]
+        self.message: Optional[str] = None
+        self.code: Optional[str] = None
 
         if isinstance(data, dict):
-            self.message = data.get('error', {}).get('message')
-            self.code = data.get('error', {}).get('code')
-        else:
-            self.message = None
-            self.code = None
+            self.message = data.get('message')
+            self.code = data.get('code')
 
         message_fmt = f'{self.code or "No code."}: {self.message or "No message"}.'
         super().__init__(message_fmt, *args, **kwargs)

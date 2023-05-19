@@ -21,31 +21,20 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import NamedTuple
+from typing import TypedDict, TypeVar, Generic
+from typing_extensions import NotRequired
 
-__version__ = '1.0.2'
-__author__ = 'NextChai'
-__license__ = 'MIT'
-__copyright__ = 'Copyright (c) 2021-present NextChai'
-
-from . import abc as abc, utils as utils
-from .client import *
-from .config import *
-from .domain import *
-from .enums import *
-from .errors import *
-from .file import *
-from .permissions import *
-from .upload import *
-from .user import *
+from .error import Error
 
 
-class VersionInfo(NamedTuple):
-    major: int
-    minor: int
-    micro: int
-    releaselevel: str
-    serial: int
+TypedDictT = TypeVar('TypedDictT', bound='TypedDict')
 
 
-version_info = VersionInfo(1, 0, 2, 'final', 0)
+class Response(TypedDict, Generic[TypedDictT]):
+    success: bool
+    data: NotRequired[TypedDictT]
+    error: NotRequired[Error]
+
+
+class Message(TypedDict):
+    message: str

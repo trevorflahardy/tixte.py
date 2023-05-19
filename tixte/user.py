@@ -22,7 +22,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Optional, Tuple
 
 from .abc import IDable
 from .enums import Premium, Region
@@ -31,6 +31,7 @@ from .utils import parse_time, simple_repr
 
 if TYPE_CHECKING:
     from .state import State
+    from .types.user import User as UserPayload, ClientUser as ClientUserPayload
 
 __all__: Tuple[str, ...] = (
     'User',
@@ -85,7 +86,7 @@ class User(IDable):
         'staff',
     )
 
-    def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
+    def __init__(self, *, state: State, data: UserPayload) -> None:
         self._state: State = state
 
         self.id: str = data['id']
@@ -168,7 +169,7 @@ class ClientUser(User):
         'premium_tier',
     ) + User.__slots__
 
-    def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
+    def __init__(self, *, state: State, data: ClientUserPayload) -> None:
         super().__init__(state=state, data=data)
 
         self.mfa_enabled: bool = data['mfa_enabled']

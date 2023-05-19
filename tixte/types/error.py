@@ -21,32 +21,11 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Tuple
-
-from .abc import Object
-from .utils import simple_repr
-
-if TYPE_CHECKING:
-    from .state import State
-
-__all__: Tuple[str, ...] = ('DeleteResponse',)
+from typing import TypedDict
+from typing_extensions import NotRequired
 
 
-@simple_repr
-class DeleteResponse(Object):
-    """Represents the response from Tixte when deleting a file.
-
-    Attributes
-    ----------
-    message: :class:`str`
-        The message from Tixte with the status of the deletion.
-    extra: Dict[:class:`str`, :class:`str`]
-        Any extra metadata that Tixte passed along with the deletion.
-    """
-
-    __slots__: Tuple[str, ...] = ('_state', 'message', 'extra')
-
-    def __init__(self, *, state: State, data: Dict[str, str]) -> None:
-        self._state: State = state
-        self.message: str = data['message']
-        self.extra: Dict[str, str] = data
+class Error(TypedDict):
+    code: str
+    message: str
+    field: NotRequired[str]

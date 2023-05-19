@@ -39,14 +39,12 @@ from typing import (
 
 from typing_extensions import ParamSpec, Self
 
-from tixte.enums import UploadType
-
 from .abc import Object
 from .config import Config
-from .errors import NotFound
 from .http import HTTP
 from .state import State
 from .upload import PartialUpload, Upload
+from .enums import UploadType, UploadPermissionLevel
 
 if TYPE_CHECKING:
     import aiohttp
@@ -529,7 +527,7 @@ class Client(Object):
         """|coro|
 
         Fetch an upload from its ID. Please note this is a wrapper around
-        :meth:`search_upload` as the API doesn't have a direct endpoint
+        :meth:`search_uploads` as the API doesn't have a direct endpoint
         for fetching an upload.
 
         Parameters
@@ -549,10 +547,7 @@ class Client(Object):
         HTTPException
             An HTTP exception has occurred.
         """
-        data = await self._http.search_upload(query=upload_id, limit=1)
-        if not data:
-            raise NotFound(None, data, 'Upload not found!')
-
+        data = await self._http.search_uploads(query=upload_id, limit=1)
         return Upload(state=self._state, data=data[0])
 
     async def fetch_uploads(self) -> List[Upload]:
@@ -568,16 +563,18 @@ class Client(Object):
         data = await self._http.get_uploads()
         return [Upload(state=self._state, data=entry) for entry in data['uploads']]
 
-    async def search_upload(
+    async def search_uploads(
         self,
         query: str,
         /,
         *,
-        domains: List[Domain] = [],
-        limit: int = 48,
+        domains: Optional[List[Union[str, Domain]]] = None,
+        limit: Optional[int] = None,
         min_size: Optional[int] = None,
         max_size: Optional[int] = None,
-        sort_by: str = 'relevant',
+        sort_by: Optional[Literal['relevant']] = None,
+        permission_levels: Optional[List[UploadPermissionLevel]] = None,
+        extensions: Optional[List[str]] = None,
     ) -> List[Upload]:
         """|coro|
 
@@ -605,13 +602,23 @@ class Client(Object):
         List[:class:`Upload`]
             A list of all uploads that match the query.
         """
-        data = await self._http.search_upload(
+        domain_urls: Optional[List[str]] = None
+        if domains:
+            domain_urls = [d if isinstance(d, str) else d.url for d in domains]
+
+        permission_level_values: Optional[List[int]] = None
+        if permission_levels:
+            permission_level_values = [p.value for p in permission_levels]
+
+        data = await self._http.search_uploads(
             query=query,
-            domains=[d.url for d in domains],
+            domains=domain_urls,
             limit=limit,
             min_size=min_size,
             max_size=max_size,
             sort_by=sort_by,
+            permission_levels=permission_level_values,
+            extensions=extensions,
         )
         return [Upload(state=self._state, data=entry) for entry in data]
 

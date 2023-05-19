@@ -21,15 +21,18 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, overload
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union, overload
 
 from .abc import Object
 from .enums import UploadPermissionLevel
+from .abc import IDable
 
 if TYPE_CHECKING:
     from .state import State
     from .upload import PartialUpload, Upload
     from .user import User
+
+    from .types.upload import UploadPermission as UploadPermissionPayload
 
 
 @overload
@@ -38,18 +41,21 @@ def _parse_permissions(state: State, parser: None) -> None:
 
 
 @overload
-def _parse_permissions(state: State, parser: List[Dict[str, Any]]) -> Dict[User, UploadPermissionLevel]:
+def _parse_permissions(state: State, parser: List[UploadPermissionPayload]) -> Dict[User, UploadPermissionLevel]:
     ...
 
 
-def _parse_permissions(state: State, parser: Optional[List[Dict[str, Any]]]) -> Optional[Dict[User, UploadPermissionLevel]]:
+def _parse_permissions(
+    state: State, parser: Optional[List[UploadPermissionPayload]]
+) -> Optional[Dict[User, UploadPermissionLevel]]:
     if not parser:
         return None
 
     data: Dict[User, UploadPermissionLevel] = {}
 
     for entry in parser:
-        data[state.store_user(entry['user'])] = UploadPermissionLevel(entry['access_level'])
+        level = entry.get('access_level') or entry['permission_level']
+        data[state.store_user(entry['user'])] = UploadPermissionLevel(level)
 
     return data
 
@@ -73,7 +79,7 @@ class Permissions(Object):
         *,
         state: State,
         upload: Union[PartialUpload, Upload],
-        permission_mapping: Optional[List[Dict[str, Any]]] = None,
+        permission_mapping: Optional[List[UploadPermissionPayload]] = None,
     ) -> None:
         self._state: State = state
         self.upload: Union[PartialUpload, Upload] = upload
@@ -108,7 +114,7 @@ class Permissions(Object):
         self._permissions = permissions = _parse_permissions(self._state, data)
         return permissions
 
-    async def add(self, user: User, /, *, level: UploadPermissionLevel, message: Optional[str] = None) -> User:
+    async def add_user(self, user: IDable, /, *, level: UploadPermissionLevel, message: Optional[str] = None) -> None:
         """|coro|
 
         Add a user to this upload\'s permissions. For example, if this is a private upload you can grant
@@ -116,18 +122,13 @@ class Permissions(Object):
 
         Parameters
         ----------
-        user: :class:`User`
+        user: :class:`abc.IDable`
             The user to add to the permissions.
         level: :class:`UploadPermissionLevel`
             The permission level to grant the user. Note that granting the user :attr:`UploadPermissionLevel.owner` will
             transfer ownership to the user and you will no longer be able to edit the upload as you won't own it.
         message: Optional[:class:`str`]
             An optional message to pass along to the user.
-
-        Returns
-        -------
-        :class:`User`
-            The user that was added to the permissions.
 
         Raises
         ------
@@ -141,10 +142,10 @@ class Permissions(Object):
 
         if self._permissions:
             self._permissions[user] = level
+        else:
+            self._permissions = {user: level}
 
-        return user
-
-    async def remove(self, user: User, /) -> None:
+    async def remove_user(self, user: User, /) -> None:
         """|coro|
 
         Remove the current permissions of a user. For example, if this is a private upload you can revoke

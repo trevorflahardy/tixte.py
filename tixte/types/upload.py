@@ -21,31 +21,37 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import NamedTuple
+from typing import Optional, TypedDict, List
+from typing_extensions import NotRequired
 
-__version__ = '1.0.2'
-__author__ = 'NextChai'
-__license__ = 'MIT'
-__copyright__ = 'Copyright (c) 2021-present NextChai'
-
-from . import abc as abc, utils as utils
-from .client import *
-from .config import *
-from .domain import *
-from .enums import *
-from .errors import *
-from .file import *
-from .permissions import *
-from .upload import *
-from .user import *
+from .user import PartialUser
 
 
-class VersionInfo(NamedTuple):
-    major: int
-    minor: int
-    micro: int
-    releaselevel: str
-    serial: int
+class UploadPermission(TypedDict):
+    user: PartialUser
+    access_level: int  # The API flip flops between access_level and permission_level, so I'm just going to include both and use "or"
+    permission_level: int
 
 
-version_info = VersionInfo(1, 0, 2, 'final', 0)
+class Upload(TypedDict):
+    id: str  # The API flip flops between id and asset_id, so I'm just going to include both and use "or"
+    asset_id: str
+    name: str
+    region: str
+    filename: str
+    extension: str
+    domain: str
+    type: int
+    expiration: Optional[str]
+    permissions: List[UploadPermission]
+    url: str
+    dorect_url: str
+    deletion_url: str
+    message: str
+    uploaded_at: NotRequired[str]
+
+
+class BulkGetUploads(TypedDict):
+    total: int
+    results: int
+    uploads: List[Upload]

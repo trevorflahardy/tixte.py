@@ -24,7 +24,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
 from .abc import Object
-from .delete import DeleteResponse
 from .user import User
 from .utils import simple_repr
 
@@ -121,7 +120,7 @@ class Domain(Object):
         data = await self._state.http.get_user(self.owner_id)
         return self._state.store_user(data)
 
-    async def delete(self) -> DeleteResponse:
+    async def delete(self) -> None:
         """|coro|
 
         Deletes the domain.
@@ -134,4 +133,3 @@ class Domain(Object):
         """
         data = await self._state.http.delete_domain(self.url)
         self._state.remove_domain(self.url)
-        return DeleteResponse(state=self._state, data=data)
