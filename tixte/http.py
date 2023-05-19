@@ -311,10 +311,9 @@ class HTTP:
         r = Route('DELETE', '/users/@me/uploads/{upload_id}', upload_id=upload_id)
         return self.request(r)
 
-    # NOTE: Tixte removed this endpoint.
-    # def get_upload(self, upload_id: str) -> Response[upload.Upload]:
-    #     r = Route('GET', '/users/@me/uploads/{upload_id}', upload_id=upload_id)
-    #     return self.request(r)
+    def get_upload(self, upload_id: str) -> Response[upload.Upload]:
+        r = Route('GET', '/users/@me/uploads/{upload_id}', upload_id=upload_id)
+        return self.request(r)
 
     def get_upload_permissions(self, upload_id: str) -> Response[List[upload.UploadPermission]]:
         r = Route('GET', '/users/@me/uploads/{upload_id}/permissions', upload_id=upload_id)
