@@ -72,19 +72,13 @@ class User(IDable):
     username: :class:`str`
         The username of the user.
     avatar: Optional[:class:`str`]
-        The user's avatar, if any.
+        The user's avatar. This will be ``None`` if they do not have an avatar.
+    flags: Optional[:class:`int`]
+        The user's flags. This will be ``None`` if it does not get passed along
+        with the payload.
     """
 
-    __slots__: Tuple[str, ...] = (
-        '_state',
-        'id',
-        'username',
-        'avatar',
-        'pro',
-        'beta',
-        'admin',
-        'staff',
-    )
+    __slots__: Tuple[str, ...] = ('_state', 'id', 'username', 'avatar', 'flags')
 
     def __init__(self, *, state: State, data: UserPayload) -> None:
         self._state: State = state
@@ -92,6 +86,7 @@ class User(IDable):
         self.id: str = data['id']
         self.username: str = data['username']
         self.avatar: Optional[str] = data.get('avatar')
+        self.flags: Optional[int] = data.get('flags')
 
     def __str__(self) -> str:
         return self.username
