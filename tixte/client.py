@@ -451,7 +451,14 @@ class Client(Object):
         HTTPException
             An HTTP exception has occurred.
         """
-        data = await self._http.upload(file, domain=domain, upload_type=upload_type.value)
+        domain_url: Optional[str] = None
+        if domain is not None:
+            if isinstance(domain, Domain):
+                domain_url = domain.url
+            else:
+                domain_url = domain
+
+        data = await self._http.upload(file, domain=domain_url, upload_type=upload_type.value)
         return Upload(state=self._state, data=data)
 
     async def url_to_file(self, url: str, /, *, filename: Optional[str] = None) -> File:

@@ -51,8 +51,6 @@ from .utils import to_json, to_string
 from .types.base import Response as ResponseDict, TypedDictT
 
 if TYPE_CHECKING:
-    from .domain import Domain
-
     from .types import user, error, upload, base
 
 
@@ -297,13 +295,11 @@ class HTTP:
             else:
                 raise HTTPException(response, 'failed to get asset')
 
-    def upload(
-        self, file: File, *, domain: Optional[Union[Domain, str]] = None, upload_type: int
-    ) -> Response[upload.Upload]:
+    def upload(self, file: File, *, domain: Optional[str] = None, upload_type: int) -> Response[upload.Upload]:
         r = Route('POST', '/upload')
 
         data: Dict[str, Any] = {
-            'domain': (domain and str(domain)) or self.domain,
+            'domain': domain or self.domain,
             'type': upload_type,
             "name": file.filename,
             "upload_source": "dashboard",
