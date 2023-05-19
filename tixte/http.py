@@ -308,7 +308,6 @@ class HTTP:
             "name": file.filename,
             "upload_source": "dashboard",
         }
-        log.debug(data)
 
         return self.request(r, files=[file], json=data)
 
