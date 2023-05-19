@@ -31,6 +31,8 @@ if TYPE_CHECKING:
     from .client import Client
     from .http import HTTP
 
+    from .types import user
+
 __all__: Tuple[str, ...] = ('State',)
 
 
@@ -60,12 +62,12 @@ class State(Object):
         self.client_user: Optional[ClientUser] = None
         self.domains: Dict[str, Domain] = {}
 
-    def store_user(self, data: Any) -> User:
+    def store_user(self, data: user.User) -> User:
         user = User(state=self, data=data)
         self.users[user.id] = user
         return user
 
-    def store_client_user(self, data: Any) -> ClientUser:
+    def store_client_user(self, data: user.ClientUser) -> ClientUser:
         user = ClientUser(state=self, data=data)
         self.client_user = user
         return user
