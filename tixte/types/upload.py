@@ -29,13 +29,16 @@ from .user import PartialUser
 
 class UploadPermission(TypedDict):
     user: PartialUser
-    access_level: int  # The API flip flops between access_level and permission_level, so I'm just going to include both and use "or"
-    permission_level: int
+
+    # The API flip flops between access_level and permission_level
+    access_level: NotRequired[int]
+    permission_level: NotRequired[int]
 
 
 class Upload(TypedDict):
-    id: str  # The API flip flops between id and asset_id, so I'm just going to include both and use "or"
-    asset_id: str
+    id: NotRequired[str]  # The API flip flops between id and asset_id
+    asset_id: NotRequired[str]
+
     name: str
     region: str
     filename: str

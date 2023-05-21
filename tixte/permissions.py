@@ -54,7 +54,7 @@ def _parse_permissions(
     data: Dict[User, UploadPermissionLevel] = {}
 
     for entry in parser:
-        level = entry.get('access_level') or entry['permission_level']
+        level = entry.get('access_level') or entry['permission_level']  # type: ignore
         data[state.store_user(entry['user'])] = UploadPermissionLevel(level)
 
     return data

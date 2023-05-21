@@ -181,7 +181,7 @@ class Upload(IDable):
     def __init__(self, *, state: State, data: UploadPayload) -> None:
         self._state: State = state
 
-        self.id: str = data.get('id') or data['asset_id']
+        self.id: str = data.get('id') or data['asset_id']  # type: ignore
         self.name: str = data['name']
         self.region: Optional[Region] = Region(region) if (region := data.get('region')) else None
         self.permissions: Permissions = Permissions(

@@ -62,7 +62,7 @@ class State(Object):
         self.client_user: Optional[ClientUser] = None
         self.domains: Dict[str, Domain] = {}
 
-    def store_user(self, data: user.User) -> User:
+    def store_user(self, data: user.PartialUser) -> User:
         user = User(state=self, data=data)
         self.users[user.id] = user
         return user

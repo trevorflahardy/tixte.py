@@ -22,7 +22,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Any, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
 
 from .abc import IDable
 from .enums import Premium, Region
@@ -31,7 +31,7 @@ from .utils import parse_time, simple_repr
 
 if TYPE_CHECKING:
     from .state import State
-    from .types.user import User as UserPayload, ClientUser as ClientUserPayload
+    from .types.user import User as UserPayload, ClientUser as ClientUserPayload, PartialUser as PartialUserPayload
 
 __all__: Tuple[str, ...] = (
     'User',
@@ -80,7 +80,7 @@ class User(IDable):
 
     __slots__: Tuple[str, ...] = ('_state', 'id', 'username', 'avatar', 'flags')
 
-    def __init__(self, *, state: State, data: UserPayload) -> None:
+    def __init__(self, *, state: State, data: Union[UserPayload, PartialUserPayload]) -> None:
         self._state: State = state
 
         self.id: str = data['id']
