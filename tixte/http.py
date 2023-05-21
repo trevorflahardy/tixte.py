@@ -413,7 +413,7 @@ class HTTP:
         r = Route('GET', '/users/@me/domains')
         return self.request(r)
 
-    # NOTE: Not implemented
+    # NOTE: Not implemented by the API
     def get_domain(self) -> Response[Any]:
         ...
 
@@ -471,18 +471,22 @@ class HTTP:
         r = Route('GET', '/users/@me/keys')
         return self.request(r)
 
+    # NOTE: Not known at this time.
     def get_subscriptions(self) -> Response[Dict[str, Any]]:
         r = Route('GET', '/users/@me/billing/subscriptions')
         return self.request(r)
 
+    # NOTE: Not known at this time.
     def get_payment_methods(self) -> Response[Dict[str, Any]]:
         r = Route('GET', '/users/@me/billing/payment-methods')
         return self.request(r)
 
+    # NOTE: Not known at this time.
     def get_transactions(self) -> Response[Dict[str, Any]]:
         r = Route('GET', '/users/@me/billing/transactions')
         return self.request(r)
 
+    # NOTE: Not known at this time.
     def get_developer_applications(self) -> Response[Dict[str, Any]]:
         r = Route('GET', '/users/@me/developer/applications')
         return self.request(r)

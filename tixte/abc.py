@@ -21,7 +21,7 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import Tuple
+from typing import Optional, Tuple, Type
 
 from .utils import simple_repr
 
@@ -57,14 +57,26 @@ class IDable(Object):
         .. describe:: hash(x)
 
             Returns the hash of the object.
+
+    Parameters
+    ----------
+    id: :class:`str`
+        The ID of the object.
+    type_of: Optional[:class:`type`]
+        The type of object this is. This is very useful
+        if you're creating an IDable object that must be casted to another,
+        and want the ``eq`` and ``ne`` methods to function normally.
+        Defaults to :class:`IDable`.
     """
 
-    __slots__: Tuple[str, ...] = ('id',)
+    __slots__: Tuple[str, ...] = ('id', 'type_of')
 
-    id: str
+    def __init__(self, id: str, *, type_of: Optional[Type[IDable]] = None) -> None:
+        self.id: str = id
+        self.type_of: Type[IDable] = type_of or IDable
 
     def __eq__(self, __other: object) -> bool:
-        if not isinstance(__other, self.__class__):
+        if not isinstance(__other, self.type_of):
             return False
 
         return self.id == __other.id

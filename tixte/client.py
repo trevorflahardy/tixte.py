@@ -46,11 +46,12 @@ from .state import State
 from .upload import PartialUpload, Upload
 from .enums import UploadType, UploadPermissionLevel
 from .settings import PartialSettings
+from .domain import Domain
+
 
 if TYPE_CHECKING:
     import aiohttp
 
-    from .domain import Domain
     from .file import File
     from .user import ClientUser, User
     from types.domain import CreateDomain
