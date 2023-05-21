@@ -20,16 +20,20 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
+from typing import TypedDict
 
-from . import (
-    base as base,
-    domain as domain,
-    error as error,
-    upload as upload,
-    user as user,
-    config as config,
-    upload_key as upload_key,
-    settings as settings,
-    upload_size as upload_size,
-    requested_data as requested_data,
-)
+
+class PrivacySettings(TypedDict):
+    shareable: int
+    addable: bool
+
+
+class EmailSettings(TypedDict):
+    promotional: bool
+    shared_file: bool
+    new_login: bool
+
+
+class Settings(TypedDict):
+    privacy: PrivacySettings
+    emails: EmailSettings

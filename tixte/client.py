@@ -45,6 +45,7 @@ from .http import HTTP
 from .state import State
 from .upload import PartialUpload, Upload
 from .enums import UploadType, UploadPermissionLevel
+from .settings import PartialSettings
 
 if TYPE_CHECKING:
     import aiohttp
@@ -391,6 +392,18 @@ class Client(Object):
             The partial upload with the given ID.
         """
         return PartialUpload(state=self._state, id=id)
+
+    def get_partial_settings(self) -> PartialSettings:
+        """A method used to get a partial settings object. This will
+        allow you to edit your Tixte :class:`Settings` without having to fetch
+        it initially.
+
+        Returns
+        -------
+        :class:`PartialSettings`
+            The partial settings object.
+        """
+        return PartialSettings(state=self._state)
 
     async def fetch_user(self, id: str, /) -> User:
         """|coro|

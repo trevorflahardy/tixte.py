@@ -487,11 +487,11 @@ class HTTP:
         r = Route('GET', '/users/@me/developer/applications')
         return self.request(r)
 
-    def get_settings(self) -> Response[Dict[str, Any]]:
+    def get_settings(self) -> Response[settings.Settings]:
         r = Route('GET', '/users/@me/settings')
         return self.request(r)
 
-    def update_settings(
+    def edit_settings(
         self,
         *,
         new_login: Optional[bool] = None,
@@ -499,7 +499,7 @@ class HTTP:
         shared_file: Optional[bool] = None,
         addable: Optional[bool] = None,
         shareable: Optional[int] = None,
-    ) -> Response[Dict[str, Any]]:
+    ) -> Response[settings.Settings]:
         emails: Dict[str, Any] = {}
 
         if new_login is not None:
@@ -530,57 +530,15 @@ class HTTP:
         r = Route('PATCH', '/users/@me/settings')
         return self.request(r, json=data)
 
-    def request_data(self) -> Response[Dict[str, Any]]:
-        r = Route('POST', '/users/@me/data-requests')
+    def get_requested_data_status(self) -> Response[requested_data.RequestedDataStatus]:
+        r = Route('GET', '/users/@me/data-requests')
         return self.request(r)
 
-    def update_config(
-        self,
-        *,
-        author_name: Optional[str] = None,
-        author_url: Optional[str] = None,
-        description: Optional[str] = None,
-        provider_name: Optional[str] = None,
-        provider_url: Optional[str] = None,
-        theme_color: Optional[str] = None,
-        title: Optional[str] = None,
-        custom_css: Optional[str] = None,
-    ) -> Response[Any]:
-        embed: Dict[str, str] = {}
+    def request_data(self) -> Response[Dict[str, Any]]:
+        r = Route('POST', '/users/@me/data-requests')
+        return self.request(r, data=r'{}')
 
-        if author_name is not None:
-            embed['author_name'] = author_name
-
-        if author_url is not None:
-            embed['author_url'] = author_url
-
-        if description is not None:
-            embed['description'] = description
-
-        if provider_name is not None:
-            embed['provider_name'] = provider_name
-
-        if provider_url is not None:
-            embed['provider_url'] = provider_url
-
-        if theme_color is not None:
-            embed['theme_color'] = theme_color
-
-        if title is not None:
-            embed['title'] = title
-
-        data: Dict[str, Any] = {}
-
-        if embed:
-            data['embed'] = embed
-
-        if custom_css is not None:
-            data['custom_css'] = custom_css
-
-        r = Route('PATCH', '/users/@me/config')
-        return self.request(r, json=data)
-
-    def get_total_upload_size(self) -> Response[Any]:
+    def get_total_upload_size(self) -> Response[upload_size.UploadSize]:
         r = Route('GET', '/users/@me/uploads/size')
         return self.request(r)
 

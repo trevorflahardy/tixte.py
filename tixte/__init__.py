@@ -38,6 +38,7 @@ from .file import *
 from .permissions import *
 from .upload import *
 from .user import *
+from .settings import *
 
 
 class VersionInfo(NamedTuple):
