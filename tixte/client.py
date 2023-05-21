@@ -418,6 +418,21 @@ class Client(Object):
         data = await self._http.get_user(id)
         return self._state.store_user(data)
 
+    async def search_users(self, query: str, *, limit: int = 6) -> List[User]:
+        """|coro|
+
+        Searches users from their given username and returns a list of close matches.
+
+        Parameters
+        ----------
+        query: :class:`str`
+            The query to search for.
+        limit: :class:`int`
+            The maximum amount of users to return. Defaults to 6.
+        """
+        data = await self._http.search_users(query, limit=limit)
+        return [self._state.store_user(user_payload) for user_payload in data]
+
     async def upload(
         self,
         file: File,

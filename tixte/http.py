@@ -51,7 +51,7 @@ from .utils import to_json, to_string
 from .types.base import Response as ResponseDict, TypedDictT
 
 if TYPE_CHECKING:
-    from .types import user, error, upload, base
+    from .types import *
 
 
 __all__: Tuple[str, ...] = ('Route', 'HTTP')
@@ -369,7 +369,7 @@ class HTTP:
         max_size: Optional[int] = None,
         sort_by: Optional[str] = None,
         permission_levels: Optional[List[int]] = None,
-    ) -> Response[List[Any]]:
+    ) -> Response[List[upload.Upload]]:
         data: Dict[str, Any] = {'query': query}
 
         if domains is not None:
@@ -404,13 +404,12 @@ class HTTP:
         r = Route('GET', '/users/{user_id}', user_id=user_id)
         return self.request(r)
 
-    # NOTE: Private endpoint:
-    def search_user(self, query: str, limit: int = 6) -> Response[List[user.User]]:
-        r = Route('POST', 'users/search')
+    def search_users(self, query: str, limit: int = 6) -> Response[List[user.User]]:
+        r = Route('POST', '/users/search')
         data = {'query': query, 'limit': limit}
-        return self.request(r, json=data)
+        return self.request(r, data=data)
 
-    def get_domains(self) -> Response[Any]:
+    def get_domains(self) -> Response[domain.BulkGetDomains]:
         r = Route('GET', '/users/@me/domains')
         return self.request(r)
 
@@ -418,7 +417,7 @@ class HTTP:
     def get_domain(self) -> Response[Any]:
         ...
 
-    def create_domain(self, domain: str, *, custom: bool = False) -> Response[Any]:
+    def create_domain(self, domain: str, *, custom: bool = False) -> Response[domain.Domain]:
         r = Route('PATCH', '/users/@me/domains')
         data = {'domain': domain, 'custom': custom}
         return self.request(r, json=data)

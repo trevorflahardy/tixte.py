@@ -21,7 +21,7 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Optional, Tuple
 
 from .abc import Object
 from .user import User
@@ -29,6 +29,7 @@ from .utils import simple_repr
 
 if TYPE_CHECKING:
     from .state import State
+    from .types.domain import Domain as DomainPayload
 
 __all__: Tuple[str, ...] = ('Domain',)
 
@@ -74,7 +75,7 @@ class Domain(Object):
 
     __slots__: Tuple[str, ...] = ('url', 'uploads', '_state', 'owner_id')
 
-    def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
+    def __init__(self, *, state: State, data: DomainPayload) -> None:
         self._state: State = state
 
         self.url: str = data['name']
