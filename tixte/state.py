@@ -21,7 +21,7 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Callable, Dict, Optional, Tuple
 
 from .abc import Object
 from .domain import Domain
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from .client import Client
     from .http import HTTP
 
-    from .types import user
+    from .types import user, domain
 
 __all__: Tuple[str, ...] = ('State',)
 
@@ -78,7 +78,7 @@ class State(Object):
     def get_user(self, id: str) -> Optional[User]:
         return self.users.get(id)
 
-    def store_domain(self, data: Any) -> Domain:
+    def store_domain(self, data: domain.Domain) -> Domain:
         domain = Domain(state=self, data=data)
         self.domains[domain.url] = domain
         return domain

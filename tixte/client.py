@@ -52,6 +52,7 @@ if TYPE_CHECKING:
     from .domain import Domain
     from .file import File
     from .user import ClientUser, User
+    from types.domain import CreateDomain
 
 __all__: Tuple[str, ...] = ('Client',)
 
@@ -665,7 +666,19 @@ class Client(Object):
     #     data = await self._http.search_user(name, limit=limit)
     #     return [self._state.store_user(entry) for entry in data]
 
-    async def create_domain(self, domain: str, /, *, is_custom: bool = False) -> Domain:
+    @overload
+    async def create_domain(self, domain: str, /, *, is_custom: bool = False, ensure_cache: Literal[True] = True) -> Domain:
+        ...
+
+    @overload
+    async def create_domain(
+        self, domain: str, /, *, is_custom: bool = False, ensure_cache: Literal[False] = False
+    ) -> CreateDomain:
+        ...
+
+    async def create_domain(
+        self, domain: str, /, *, is_custom: bool = False, ensure_cache: bool = True
+    ) -> Union[Domain, CreateDomain]:
         """|coro|
 
         Creates a domain on Tixte.
@@ -678,13 +691,21 @@ class Client(Object):
             Denotes if the domain is a custom domain that you personally own, instead of a subdomain
             that tixte creates for you. If ``False``, than the domain must end in ``tixte.co``, ``likes.cash``,
             ``discowd.com``, ``has.rocks``, ``is-from.space``, ``bot.style``, ``needs.rest``, or ``wants.solutions``.
+        ensure_cache: :class:`bool`
+            If this is ``True``, the library will cache the newly created domain. To do so, it may need to fetch
+            the client user. Tixte does not return the newly created :class:`Domain` instance by default. This defaults
+            to ``True``.
 
         Returns
         -------
-        :class:`Domain`
-            The domain that was created.
+        Union[:class:`Domain`, dict]
+            The domain that was created. This will be a :class:`Domain` instance if ``ensure_cache`` is ``True``, otherwise
+            this will be the raw JSON data that Tixte returns.
         """
-        await self._http.create_domain(domain, custom=is_custom)
+        response = await self._http.create_domain(domain, custom=is_custom)
+        if ensure_cache is False:
+            return response
+        
         owner = self.user or await self.fetch_client_user()
         return self._state.store_domain({'name': domain, 'uploads': 0, 'owner': owner.id})
 

@@ -417,10 +417,10 @@ class HTTP:
     def get_domain(self) -> Response[Any]:
         ...
 
-    def create_domain(self, domain: str, *, custom: bool = False) -> Response[domain.Domain]:
+    def create_domain(self, domain: str, *, custom: bool = False) -> Response[domain.CreateDomain]:
         r = Route('PATCH', '/users/@me/domains')
         data = {'domain': domain, 'custom': custom}
-        return self.request(r, json=data)
+        return self.request(r, data=data)
 
     def delete_domain(self, domain: str) -> Response[Any]:
         # {"success":true,"data":{"message":"Domain successfully deleted","domain":"foo_bar.tixte.co"}}

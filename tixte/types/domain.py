@@ -23,6 +23,8 @@ from __future__ import annotations
 
 from typing import TypedDict, List
 
+from .base import Message
+
 
 class Domain(TypedDict):
     owner: str
@@ -33,3 +35,8 @@ class Domain(TypedDict):
 class BulkGetDomains(TypedDict):
     total: int
     domains: List[Domain]
+
+
+class CreateDomain(Message):
+    domain: str
+    custom: bool
