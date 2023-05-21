@@ -467,8 +467,7 @@ class HTTP:
         r = Route('PATCH', '/users/@me/config')
         return self.request(r, data=data)
 
-    def get_upload_key(self) -> Response[Dict[str, Any]]:
-        # {"success":true,"data":{"api_key":"..."}}
+    def get_upload_key(self) -> Response[upload_key.UploadKey]:
         r = Route('GET', '/users/@me/keys')
         return self.request(r)
 
