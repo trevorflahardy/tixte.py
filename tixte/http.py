@@ -422,14 +422,50 @@ class HTTP:
         data = {'domain': domain, 'custom': custom}
         return self.request(r, data=data)
 
-    def delete_domain(self, domain: str) -> Response[Any]:
-        # {"success":true,"data":{"message":"Domain successfully deleted","domain":"foo_bar.tixte.co"}}
+    def delete_domain(self, domain: str) -> Response[domain.DeleteDomain]:
         r = Route('DELETE', '/users/@me/domains/{domain}', domain=domain)
         return self.request(r)
 
-    def get_config(self) -> Response[Any]:
+    def get_config(self) -> Response[config.Config]:
         r = Route('GET', '/users/@me/config')
         return self.request(r)
+
+    def edit_config(
+        self,
+        *,
+        embed_author_name: Optional[str] = None,
+        embed_author_url: Optional[str] = None,
+        embed_description: Optional[str] = None,
+        embed_provider_name: Optional[str] = None,
+        embed_provider_url: Optional[str] = None,
+        embed_theme_color: Optional[str] = None,
+        embed_title: Optional[str] = None,
+    ) -> Response[config.EditConfig]:
+        data: Dict[Literal['embed'], config.ConfigEmbed] = {"embed": {}}
+
+        if embed_author_name is not None:
+            data["embed"]["author_name"] = embed_author_name
+
+        if embed_author_url is not None:
+            data["embed"]["author_url"] = embed_author_url
+
+        if embed_description is not None:
+            data["embed"]["description"] = embed_description
+
+        if embed_provider_name is not None:
+            data["embed"]["provider_name"] = embed_provider_name
+
+        if embed_provider_url is not None:
+            data["embed"]["provider_url"] = embed_provider_url
+
+        if embed_theme_color is not None:
+            data["embed"]["theme_color"] = embed_theme_color
+
+        if embed_title is not None:
+            data["embed"]["title"] = embed_title
+
+        r = Route('PATCH', '/users/@me/config')
+        return self.request(r, data=data)
 
     def get_upload_key(self) -> Response[Dict[str, Any]]:
         # {"success":true,"data":{"api_key":"..."}}

@@ -29,7 +29,7 @@ from .utils import simple_repr
 
 if TYPE_CHECKING:
     from .state import State
-    from .types.domain import Domain as DomainPayload
+    from .types.domain import Domain as DomainPayload, DeleteDomain as DeleteDomainPayload
 
 __all__: Tuple[str, ...] = ('Domain',)
 
@@ -121,16 +121,17 @@ class Domain(Object):
         data = await self._state.http.get_user(self.owner_id)
         return self._state.store_user(data)
 
-    async def delete(self) -> None:
+    async def delete(self) -> DeleteDomainPayload:
         """|coro|
 
         Deletes the domain.
 
         Returns
         -------
-        :class:`DeleteResponse`
-            The response from the delete request. :attr:`DeleteResponse.extra` will contain a ``domain``
-            key.
+        :class:`dict`
+            The response from the delete request. Will contain two keys, a ``message``
+            and ``domain`` key.
         """
         data = await self._state.http.delete_domain(self.url)
         self._state.remove_domain(self.url)
+        return data

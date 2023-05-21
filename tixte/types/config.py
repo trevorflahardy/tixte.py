@@ -21,4 +21,29 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from . import base as base, domain as domain, error as error, upload as upload, user as user, config as config
+from typing import TypedDict
+from typing_extensions import NotRequired
+
+from .base import Message
+
+
+class ConfigEmbed(TypedDict):
+    title: NotRequired[str]
+    theme_color: NotRequired[str]
+    author_name: NotRequired[str]
+    author_url: NotRequired[str]
+    provider_name: NotRequired[str]
+    provider_url: NotRequired[str]
+    description: NotRequired[str]
+
+
+class Config(TypedDict):
+    custom_css: str
+    hide_branding: bool
+    base_redirect: bool
+    only_image: bool
+    embed: ConfigEmbed
+
+
+class EditConfig(Message):
+    config: Config

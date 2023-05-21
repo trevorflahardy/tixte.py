@@ -40,3 +40,7 @@ class BulkGetDomains(TypedDict):
 class CreateDomain(Message):
     domain: str
     custom: bool
+
+
+class DeleteDomain(Message):
+    domain: str

@@ -441,6 +441,7 @@ class Client(Object):
         *,
         domain: Optional[Union[Domain, str]] = None,
         upload_type: UploadType = UploadType.public,
+        ensure_cache: bool = True,
     ) -> Upload:
         """|coro|
 
@@ -454,6 +455,10 @@ class Client(Object):
             Optionally, upload to a different domain than the client's default.
         upload_type: :class:`UploadType`
             Which type of upload to use. This can be either ``public`` or ``private``.
+        ensure_cache: :class:`bool`
+            Whether to make an attempt to keep the upload count on the given domain
+            up to date. This is done by checking if the given domain is in the cached
+            domains, and if so, incrementing the upload count by one. Defaults to ``True``.
 
         Returns
         -------
@@ -467,15 +472,18 @@ class Client(Object):
         HTTPException
             An HTTP exception has occurred.
         """
-        domain_url: Optional[str] = None
-        if domain is not None:
-            if isinstance(domain, Domain):
-                domain_url = domain.url
-            else:
-                domain_url = domain
+        domain = domain or self._http.domain
+        domain_url = domain.url if isinstance(domain, Domain) else domain
 
         data = await self._http.upload(file, domain=domain_url, upload_type=upload_type.value)
-        return Upload(state=self._state, data=data)
+        upload = Upload(state=self._state, data=data)
+
+        if ensure_cache is True:
+            uploaded_domain = self._state.get_domain(domain_url)
+            if uploaded_domain is not None:
+                uploaded_domain.uploads += 1
+
+        return upload
 
     async def url_to_file(self, url: str, /, *, filename: Optional[str] = None) -> File:
         """|coro|
@@ -698,14 +706,14 @@ class Client(Object):
 
         Returns
         -------
-        Union[:class:`Domain`, dict]
+        Union[:class:`Domain`, :class:`dict`]
             The domain that was created. This will be a :class:`Domain` instance if ``ensure_cache`` is ``True``, otherwise
             this will be the raw JSON data that Tixte returns.
         """
         response = await self._http.create_domain(domain, custom=is_custom)
         if ensure_cache is False:
             return response
-        
+
         owner = self.user or await self.fetch_client_user()
         return self._state.store_domain({'name': domain, 'uploads': 0, 'owner': owner.id})
 
