@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from typing import NamedTuple
 
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 __author__ = 'NextChai'
 __license__ = 'MIT'
 __copyright__ = 'Copyright (c) 2021-present NextChai'
