@@ -25,7 +25,7 @@ SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Any, Callable, Dict, Iterable, Optional, Tuple, Type, TypeVar
+from typing import Any, Callable, Dict, Iterable, Optional, Tuple, Type, TypeVar, overload
 
 T = TypeVar('T')
 ObjT = TypeVar('ObjT', bound='object')
@@ -57,8 +57,15 @@ else:
     def to_string(data: Dict[Any, Any]) -> str:
         return json.dumps(data)
 
-
+@overload
 def parse_time(time_strp: str) -> datetime.datetime:
+    ...
+
+@overload
+def parse_time(time_strp: Optional[str]) -> Optional[datetime.datetime]:
+    ...
+
+def parse_time(time_strp: Optional[str]) -> Optional[datetime.datetime]:
     """Parses the given tixte time string into a datetime object.
 
     Parameters
@@ -71,6 +78,9 @@ def parse_time(time_strp: str) -> datetime.datetime:
     :class:`datetime.datetime`
         The parsed datetime object.
     """
+    if not time_strp:
+        return
+
     return datetime.datetime.strptime(time_strp, '%Y-%m-%dT%H:%M:%S.%fZ')
 
 
