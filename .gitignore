@@ -115,6 +115,9 @@ env.bak/
 venv.bak/
 tixte_env/
 
+# Testing development
+_.py
+
 # Spyder project settings
 .spyderproject
 .spyproject
