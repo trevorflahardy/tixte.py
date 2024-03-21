@@ -55,11 +55,11 @@ class PartialUpload(IDable):
 
         .. describe:: x == y
 
-            Deteremines if two partial uploads are equal.
+            Determines if two partial uploads are equal.
 
         .. describe:: x != y
 
-            Deteremines if two partial uploads are not equal.
+            Determines if two partial uploads are not equal.
 
         .. describe:: hash(x)
 
@@ -125,11 +125,11 @@ class Upload(IDable):
 
         .. describe:: x == y
 
-            Deteremines if two uploads are equal.
+            Determines if two uploads are equal.
 
         .. describe:: x != y
 
-            Deteremines if two uploads are not equal.
+            Determines if two uploads are not equal.
 
         .. describe:: hash(x)
 
@@ -141,7 +141,7 @@ class Upload(IDable):
         The ID of the file.
     name: :class:`str`
         The name of the file.
-    filename: Optiona;[:class:`str`]
+    filename: Optional[:class:`str`]
         The filename of the file. This is the combined name and extension of the file.
         Can be ``None`` if the file was uploaded via the search uploads endpoint.
     extension: :class:`str`
