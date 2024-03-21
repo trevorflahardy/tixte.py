@@ -195,7 +195,7 @@ class Upload(IDable):
         self.extension: str = data['extension']
         self.url: str = data.get('url') or f'https://{self.domain_url}/{self.name}.{self.extension}'
         self.direct_url: Optional[str] = data.get('direct_url')
-        self.uploaded_at: datetime.datetime = parse_time(data['uploaded_at'])
+        self.uploaded_at: Optional[datetime.datetime] = parse_time(data.get('uploaded_at'))
         self.size: Optional[int] = data.get('size')
         self.mimetype: Optional[str] = data.get('mimetype')
 
