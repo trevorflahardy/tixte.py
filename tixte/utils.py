@@ -57,13 +57,14 @@ else:
     def to_string(data: Dict[Any, Any]) -> str:
         return json.dumps(data)
 
-@overload
-def parse_time(time_strp: str) -> datetime.datetime:
-    ...
 
 @overload
-def parse_time(time_strp: Optional[str]) -> Optional[datetime.datetime]:
-    ...
+def parse_time(time_strp: str) -> datetime.datetime: ...
+
+
+@overload
+def parse_time(time_strp: Optional[str]) -> Optional[datetime.datetime]: ...
+
 
 def parse_time(time_strp: Optional[str]) -> Optional[datetime.datetime]:
     """Parses the given tixte time string into a datetime object.

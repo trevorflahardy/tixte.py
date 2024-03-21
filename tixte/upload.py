@@ -175,7 +175,7 @@ class Upload(IDable):
         'filename',
         'uploaded_at',
         'size',
-        'mimetype'
+        'mimetype',
     )
 
     def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
