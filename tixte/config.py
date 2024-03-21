@@ -19,6 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Mapping, Protocol, Tuple, Type
@@ -36,8 +37,7 @@ __all__: Tuple[str, ...] = ('Config',)
 
 class EmbedProtocol(Protocol):
     @classmethod
-    def from_dict(cls: Type[Self], data: Mapping[str, Any]) -> Self:
-        ...
+    def from_dict(cls: Type[Self], data: Mapping[str, Any]) -> Self: ...
 
 
 @simple_repr

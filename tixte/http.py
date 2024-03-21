@@ -19,6 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -381,8 +382,7 @@ class HTTP:
         return self.request(r)
 
     # NOTE: Not implemented
-    def get_domain(self) -> Response[Dict[Any, Any]]:
-        ...
+    def get_domain(self) -> Response[Dict[Any, Any]]: ...
 
     def create_domain(self, domain: str, *, custom: bool = False) -> Response[Dict[Any, Any]]:
         r = Route('PATCH', '/users/@me/domains')

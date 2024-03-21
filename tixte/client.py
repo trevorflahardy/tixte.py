@@ -19,6 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -277,14 +278,12 @@ class Client(Object):
         event: Literal['request'],
         check: Optional[Callable[[aiohttp.ClientResponse], Optional[bool]]] = None,
         timeout: Optional[float] = None,
-    ) -> aiohttp.ClientResponse:
-        ...
+    ) -> aiohttp.ClientResponse: ...
 
     @overload
     async def wait_for(
         self, event: str, check: Optional[Callable[..., Optional[bool]]] = ..., timeout: Optional[float] = None
-    ) -> Any:
-        ...
+    ) -> Any: ...
 
     async def wait_for(
         self, event: str, check: Optional[Callable[..., Optional[bool]]] = None, timeout: Optional[float] = None
