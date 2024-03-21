@@ -72,9 +72,11 @@ class Domain(Object):
         The total amount of uploads on the domain.
     owner_id: :class:`str`
         The id of the owner of the domain.
+    locked: :class:`bool`
+        Whether the domain is locked or not.
     """
 
-    __slots__: Tuple[str, ...] = ('url', 'uploads', '_state', 'owner_id')
+    __slots__: Tuple[str, ...] = ('url', 'uploads', '_state', 'owner_id', 'locked')
 
     def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
         self._state: State = state
@@ -82,6 +84,7 @@ class Domain(Object):
         self.url: str = data['name']
         self.uploads: int = data['uploads']
         self.owner_id: str = data['owner']
+        self.locked: bool = data['locked']
 
     def __eq__(self, __o: Any) -> bool:
         return self.url == __o.url and self.uploads == __o.uploads and self.owner_id == __o.owner_id
