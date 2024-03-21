@@ -2,8 +2,10 @@ name: Upload To PyPi On Release
 
 on:
   release:
-    types: [ published, edited ]
-  
+    types: [published, edited]
+
+  # Allows for manual dispatch
+  workflow_dispatch:
 
 jobs:
   build-n-publish:
@@ -11,21 +13,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.x"
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
 
-    - name: Install pypa/build
-      run: >-
-        python -m pip install --user build
-    
-    - name: Build a binrary wheel and a source tarball
-      run: >- 
-        python -m build --sdist --wheel --outdir dist/ .
+      - name: Install pypa/build
+        run: >-
+          python -m pip install --user build
 
-    - name: Publish Distro to PyPi 
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Build a binrary wheel and a source tarball
+        run: >-
+          python -m build --sdist --wheel --outdir dist/ .
+
+      - name: Publish Distro to PyPi
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
