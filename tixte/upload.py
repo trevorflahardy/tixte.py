@@ -154,6 +154,10 @@ class Upload(IDable):
         A mapping of users to their permission levels.
     type: :class:`UploadType`
         The type of upload.
+    size: Optional[:class:`int`]
+        The size of the file in bytes.
+    mimetype: Optional[:class:`str`]
+        The mimetype of the upload.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -170,12 +174,14 @@ class Upload(IDable):
         'type',
         'filename',
         'uploaded_at',
+        'size',
+        'mimetype'
     )
 
     def __init__(self, *, state: State, data: Dict[Any, Any]) -> None:
         self._state: State = state
 
-        self.id: str = data.get('id', data['asset_id'])
+        self.id: str = data.get('id') or data['asset_id']
         self.name: str = data['name']
         self.region: Optional[Region] = Region(region) if (region := data.get('region')) else None
         self.permissions: Permissions = Permissions(
@@ -190,6 +196,8 @@ class Upload(IDable):
         self.url: str = data.get('url') or f'https://{self.domain_url}/{self.name}.{self.extension}'
         self.direct_url: Optional[str] = data.get('direct_url')
         self.uploaded_at: datetime.datetime = parse_time(data['uploaded_at'])
+        self.size: Optional[int] = data.get('size')
+        self.mimetype: Optional[str] = data.get('mimetype')
 
     @property
     def domain(self) -> Optional[Domain]:
